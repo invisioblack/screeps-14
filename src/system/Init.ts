@@ -8,6 +8,8 @@ export class InitProcess extends Process {
   run() {
     Logger.debug(`Running init process [${this.name}], created at tick [${this.context.created_at}]`);
 
+    this.fork(`spawn-queue`, SPAWN_QUEUE_PROCESS, { queue: [] });
+
     for (const roomName of Object.keys(Game.rooms)) {
       this.fork(`room_${roomName}`, ROOM_PROCESS, { roomName } as RoomContext);
     }

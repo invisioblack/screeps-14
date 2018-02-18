@@ -20,7 +20,15 @@ export class Process {
 
   fork<T extends ImageType>(name: string, image: T, context?: Context[T]) {
     Logger.debug(`Forking process [${name}]`);
-    this.kernel.startProcess(name, image, context);
+    this.kernel.launchProcess(name, image, context);
+  }
+
+  sendMessage<T extends MessageType>(type: T, message: Message[T]) {
+    this.kernel.bus.sendMessage(type, message);
+  }
+
+  receiveMessages<T extends MessageType>(type: T) {
+    return this.kernel.bus.receiveMessages(type);
   }
 }
 

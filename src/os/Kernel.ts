@@ -3,22 +3,33 @@ import { Process, SerializedProcess } from "os/Process";
 import { InitProcess } from "system/Init";
 import { RoomManager } from "programs/RoomManager";
 import { SourceManager } from "programs/SourceManager";
-import { EnergyManager } from '../programs/EnergyManager';
+import { EnergyManager } from 'programs/EnergyManager';
 import { Scheduler } from "os/Scheduler";
+import { MessageBus } from "ipc/MessageBus";
+import { SpawnQueue } from 'programs/SpawnQueue';
 export const images: {[type: string]: any} = {
   'energy': EnergyManager,
   'init': InitProcess,
   'room': RoomManager,
-  'source': SourceManager
+  'source': SourceManager,
+  'spawn_queue': SpawnQueue
 };
 export class Kernel {
-  private processTable: {[name: string]: Process};
+  private processTable: {[name: string]: Process} = {};
 
-  constructor(private scheduler: Scheduler) {
-    this.processTable = {};
+  constructor(private scheduler: Scheduler, public bus: MessageBus) {
+  }
+
+  boot() {
     this.loadProcessTable();
     this.loadProcessQueue();
-    this.startProcess(INIT_PROCESS, INIT_PROCESS, { created_at: Game.time });
+    this.loadMessages();
+    this.launchProcess(INIT_PROCESS, INIT_PROCESS, { created_at: Game.time });
+  }
+
+  shutdown() {
+    this.storeProcessTable();
+    this.storeMessages();
   }
 
   run() {
@@ -29,10 +40,9 @@ export class Kernel {
       process.run();
     }
 
-    this.storeProcessTable();
   }
 
-  startProcess<T extends ImageType>(name: string, image: T, context?: Context[T], parent?: string) {
+  launchProcess<T extends ImageType>(name: string, image: T, context?: Context[T], parent?: string) {
     Logger.debug(`Process [${name}] exists? ${!!this.processTable[name]}`);
     if (this.processTable[name]) return;
     const process = new images[image](this, { name, context });
@@ -76,5 +86,12 @@ export class Kernel {
 
   loadProcessQueue() {
     _.forEach(this.processTable, process => this.scheduler.enqueueProcess(process));
+  }
+
+  loadMessages() {
+    Memory.messages = Memory.messages || {};
+  }
+
+  storeMessages() {
   }
 }
