@@ -2,7 +2,7 @@ import { Process } from "os/Process";
 import { Logger } from "utils/Logger";
 
 export class SourceManager extends Process {
-  image: string = SOURCE_PROCESS;
+  image: ImageType = SOURCE_PROCESS;
   context!: Context[SOURCE_PROCESS];
 
   run() {

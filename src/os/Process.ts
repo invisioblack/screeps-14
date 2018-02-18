@@ -5,7 +5,7 @@ export class Process {
   completed = false;
   context: any;
   name: string;
-  image = NOOP_PROCESS;
+  image: ImageType = NOOP_PROCESS;
   suspend: number | boolean = false;
 
   constructor(private kernel: Kernel, entry: SerializedProcess) {

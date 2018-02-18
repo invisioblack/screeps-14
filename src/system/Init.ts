@@ -2,7 +2,7 @@ import { Process } from "os/Process";
 import { Logger } from "utils/Logger";
 
 export class InitProcess extends Process {
-  image = INIT_PROCESS;
+  image: ImageType = INIT_PROCESS;
   context!: Context[INIT_PROCESS];
 
   run() {

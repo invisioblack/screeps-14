@@ -3,7 +3,10 @@ import { Process, SerializedProcess } from "os/Process";
 import { InitProcess } from "system/Init";
 import { RoomManager } from "programs/RoomManager";
 import { SourceManager } from "programs/SourceManager";
+import { EnergyManager } from '../programs/EnergyManager';
+import { Scheduler } from "os/Scheduler";
 export const images: {[type: string]: any} = {
+  'energy': EnergyManager,
   'init': InitProcess,
   'room': RoomManager,
   'source': SourceManager
@@ -11,20 +14,19 @@ export const images: {[type: string]: any} = {
 export class Kernel {
   private processTable: {[name: string]: Process};
 
-  constructor() {
+  constructor(private scheduler: Scheduler) {
     this.processTable = {};
     this.loadProcessTable();
+    this.loadProcessQueue();
     this.startProcess(INIT_PROCESS, INIT_PROCESS, { created_at: Game.time });
   }
 
   run() {
-    const processQueue: Process[] = [];
 
-    _.forEach(this.processTable, process => processQueue.push(process));
-
-    for (const p of processQueue) {
-      if (p.suspend !== false) continue;
-      p.run();
+    while (this.scheduler.hasProcessToRun()) {
+      const process = this.scheduler.getNextProcess();
+      if (process.suspend !== false) continue;
+      process.run();
     }
 
     this.storeProcessTable();
@@ -36,6 +38,7 @@ export class Kernel {
     const process = new images[image](this, { name, context });
     Logger.debug(`Adding process [${process.name}]`);
     this.processTable[process.name] = process;
+    this.scheduler.enqueueProcess(process);
   }
 
   storeProcessTable() {
@@ -69,5 +72,9 @@ export class Kernel {
       this.processTable[entry.name] = process;
     });
     Logger.debug(`Loading [${Memory.processTable.length}] processes`);
+  }
+
+  loadProcessQueue() {
+    _.forEach(this.processTable, process => this.scheduler.enqueueProcess(process));
   }
 }

@@ -1,16 +1,28 @@
+declare const ENERGY_PROCESS = 'energy';
 declare const INIT_PROCESS = 'init';
 declare const NOOP_PROCESS = 'noop';
 declare const ROOM_PROCESS = 'room';
 declare const SOURCE_PROCESS = 'source';
+type ENERGY_PROCESS = 'energy';
 type INIT_PROCESS = 'init';
-type NOOP_PROCESS = 'init';
+type NOOP_PROCESS = 'noop';
 type ROOM_PROCESS = 'room';
 type SOURCE_PROCESS = 'source';
 type ImageType =
-INIT_PROCESS
+ENERGY_PROCESS
+| INIT_PROCESS
+| NOOP_PROCESS
 | ROOM_PROCESS
 | SOURCE_PROCESS;
 type BlankContext = {};
+type SourceStatusContext = {
+  id: string,
+  enabled: boolean
+}
+type EnergyContext = BlankContext & {
+  roomName: string;
+  sources: SourceStatusContext[];
+}
 type InitContext = BlankContext & {
   created_at: number;
 };
@@ -24,6 +36,7 @@ type SourceContext = BlankContext & {
 };
 type Context = {
   [image: string]: {}
+  energy: EnergyContext
   init: InitContext
   room: RoomContext
   source: SourceContext
