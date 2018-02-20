@@ -14,7 +14,15 @@ export class SourceManager extends Process {
         name: `miner_${roomName}_1`,
         bodyParts: [WORK, CARRY, MOVE],
         roomName: roomName,
-        priority: 0 });
+        priority: 0
+      });
+
+        this.context.creeps = [];
+        this.context.creeps.push(`miner_${roomName}_1`);
+    }
+
+    for (const creep of this.context.creeps) {
+      this.fork(creep + '-harvest', HARVESTER_PROCESS, { creep: creep, source: this.context.id });
     }
   }
 }

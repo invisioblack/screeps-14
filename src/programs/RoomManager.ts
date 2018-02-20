@@ -12,9 +12,12 @@ export class RoomManager extends Process {
       return { id: x.id, enabled: false } as SourceStatusContext;
     });
 
+    const controller = Game.rooms[this.context.roomName].controller as StructureController;
+
     this.fork(`energy-manager_${this.context.roomName}`, ENERGY_PROCESS, {
       roomName: this.context.roomName,
-      sources: sources
+      sources: sources,
+      controller: controller.id
      } as EnergyContext);
 
     // for (const source of sources) {

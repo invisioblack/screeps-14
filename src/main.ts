@@ -5,12 +5,15 @@ import { Scheduler } from "os/Scheduler";
 import { MessageBus } from './ipc/MessageBus';
 
 declare var global: any;
+global.CONTROLLER_PROCESS = 'controller';
 global.ENERGY_PROCESS = 'energy';
+global.HARVESTER_PROCESS = 'harvester';
 global.INIT_PROCESS = 'init';
 global.NOOP_PROCESS = 'init';
 global.ROOM_PROCESS = 'room';
 global.SOURCE_PROCESS = 'source';
 global.SPAWN_QUEUE_PROCESS = 'spawn_queue';
+global.UPGRADER_PROCESS = 'upgrader';
 
 global.QUEUE_CREEP = 'queue_creep';
 
@@ -24,8 +27,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
   Logger.info(`Current game tick is ${Game.time}`);
 
   if (Game.time % 5 === 0) {
-    Memory.processTable = [];
-    Logger.info(`Resetting processTable`);
+    //Memory.processTable = [];
+    //Logger.info(`Resetting processTable`);
   }
 
   kernel.boot();

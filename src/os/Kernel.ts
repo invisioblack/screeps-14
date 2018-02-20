@@ -7,12 +7,18 @@ import { EnergyManager } from 'programs/EnergyManager';
 import { Scheduler } from "os/Scheduler";
 import { MessageBus } from "ipc/MessageBus";
 import { SpawnQueue } from 'programs/SpawnQueue';
+import { Harvester } from 'programs/Harvester';
+import { Upgrader } from 'programs/Upgrader';
+import { ControllerManager } from 'programs/ControllerManager';
 export const images: {[type: string]: any} = {
+  'controller': ControllerManager,
   'energy': EnergyManager,
+  'harvester': Harvester,
   'init': InitProcess,
   'room': RoomManager,
   'source': SourceManager,
-  'spawn_queue': SpawnQueue
+  'spawn_queue': SpawnQueue,
+  'upgrader': Upgrader
 };
 export class Kernel {
   private processTable: {[name: string]: Process} = {};
@@ -90,8 +96,10 @@ export class Kernel {
 
   loadMessages() {
     Memory.messages = Memory.messages || {};
+    this.bus.messages = Memory.messages;
   }
 
   storeMessages() {
+    Memory.messages = this.bus.messages;
   }
 }

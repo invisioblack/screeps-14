@@ -1,4 +1,4 @@
-
+import { Logger } from 'utils/Logger';
 export class MessageBus {
   public messages: {[type: string]: any[]} = {};
 
