@@ -9,7 +9,6 @@ export class Harvester extends Process {
     Logger.debug(`Harvesting with creep ${this.context.creep}`);
 
     const creep = Game.creeps[this.context.creep];
-    Logger.error(this.context.creep);
     if (!creep) {
       this.completed = true;
       return;

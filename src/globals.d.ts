@@ -17,7 +17,8 @@ type SOURCE_PROCESS = 'source';
 type SPAWN_QUEUE_PROCESS = 'spawn_queue';
 type UPGRADER_PROCESS = 'upgrader';
 type ImageType =
-CONTROLLER_PROCESS
+BUILDER_PROCESS
+| CONTROLLER_PROCESS
 | ENERGY_PROCESS
 | INIT_PROCESS
 | HARVESTER_PROCESS
@@ -25,6 +26,7 @@ CONTROLLER_PROCESS
 | ROOM_PROCESS
 | SOURCE_PROCESS
 | SPAWN_QUEUE_PROCESS
+| SPAWN_NOTIFIER_PROCESS
 | UPGRADER_PROCESS;
 type BlankContext = {};
 type SourceStatusContext = {
@@ -33,7 +35,7 @@ type SourceStatusContext = {
 }
 type ControllerContext = BlankContext & {
   id: string;
-  creeps?: string[];
+  creeps: string[];
 }
 type CreepContext = BlankContext & {
   creep: string;
@@ -54,8 +56,8 @@ type RoomContext = BlankContext & {
 };
 type SourceContext = BlankContext & {
   id: string
-  workPower?: number;
-  creeps?: string[];
+  workPower: number;
+  creeps: string[];
 };
 type SpawnQueueContext = BlankContext & {
   queue: {
@@ -71,6 +73,7 @@ type UpgraderContext = CreepContext & {
 }
 type Context = {
   [image: string]: {}
+  builder: BuilderContext
   controller: ControllerContext
   energy: EnergyContext
   harvester: HarvesterContext
@@ -78,21 +81,38 @@ type Context = {
   room: RoomContext
   source: SourceContext
   spawn_queue: SpawnQueueContext
+  spawn_notifier: SpawnNotifierContext
   upgrader: UpgraderContext
 };
 
+type EmptyMessage = {}
+type CreepMessage = {
+  creep: string;
+}
+
+declare const CREEP_SPAWNED = 'creep_spawned';
+type CREEP_SPAWNED = 'creep_spawned';
+type CreepSpawnedMessage = CreepMessage & {
+  wakeOwner: string;
+}
+
 declare const QUEUE_CREEP = 'queue_creep';
 type QUEUE_CREEP = 'queue_creep';
-type MessageType = QUEUE_CREEP;
-type EmptyMessage = {}
 type QueueCreepMessage = EmptyMessage & {
+  owner: string;
   bodyParts: BodyPartConstant[]
   name: string;
   roomName: string;
   priority: number;
 }
+
+type MessageType =
+CREEP_SPAWNED
+| QUEUE_CREEP;
+
 type Message = {
   [message: string]: {}
   'queue_creep': QueueCreepMessage
+  'creep_spawned': CreepSpawnedMessage
 }
 

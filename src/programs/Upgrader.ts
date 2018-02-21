@@ -28,6 +28,11 @@ export class Upgrader extends Process {
       if (creep.upgradeController(controller) == ERR_NOT_IN_RANGE) {
         creep.moveTo(controller, { visualizePathStyle: { stroke: '#ffffff' }});
       }
+    } else {
+      const source = creep.room.find(FIND_SOURCES)[0] as Source;
+      if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' }});
+      }
     }
   }
 }

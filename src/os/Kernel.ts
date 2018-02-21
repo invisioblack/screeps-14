@@ -6,17 +6,20 @@ import { SourceManager } from "programs/SourceManager";
 import { EnergyManager } from 'programs/EnergyManager';
 import { Scheduler } from "os/Scheduler";
 import { MessageBus } from "ipc/MessageBus";
-import { SpawnQueue } from 'programs/SpawnQueue';
+import { SpawnQueue, SpawnNotifier } from 'programs/SpawnQueue';
 import { Harvester } from 'programs/Harvester';
 import { Upgrader } from 'programs/Upgrader';
 import { ControllerManager } from 'programs/ControllerManager';
+import {Builder} from "../programs/Builder";
 export const images: {[type: string]: any} = {
+  'builder': Builder,
   'controller': ControllerManager,
   'energy': EnergyManager,
   'harvester': Harvester,
   'init': InitProcess,
   'room': RoomManager,
   'source': SourceManager,
+  'spawn_notifier': SpawnNotifier,
   'spawn_queue': SpawnQueue,
   'upgrader': Upgrader
 };
@@ -42,6 +45,10 @@ export class Kernel {
 
     while (this.scheduler.hasProcessToRun()) {
       const process = this.scheduler.getNextProcess();
+      if (this.bus.shouldWakeUpProcess(process.name)) {
+        process.suspend = false;
+        Logger.error(`Woke ${process.name}`);
+      }
       if (process.suspend !== false) continue;
       process.run();
     }
@@ -96,7 +103,7 @@ export class Kernel {
 
   loadMessages() {
     Memory.messages = Memory.messages || {};
-    this.bus.messages = Memory.messages;
+    this.bus.loadMessagesFromLastTick(Memory.messages);
   }
 
   storeMessages() {

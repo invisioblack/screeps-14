@@ -5,6 +5,7 @@ import { Scheduler } from "os/Scheduler";
 import { MessageBus } from './ipc/MessageBus';
 
 declare var global: any;
+global.BUILDER_PROCESS = 'builder';
 global.CONTROLLER_PROCESS = 'controller';
 global.ENERGY_PROCESS = 'energy';
 global.HARVESTER_PROCESS = 'harvester';
@@ -13,9 +14,11 @@ global.NOOP_PROCESS = 'init';
 global.ROOM_PROCESS = 'room';
 global.SOURCE_PROCESS = 'source';
 global.SPAWN_QUEUE_PROCESS = 'spawn_queue';
+global.SPAWN_NOTIFIER_PROCESS = 'spawn_notifier';
 global.UPGRADER_PROCESS = 'upgrader';
 
 global.QUEUE_CREEP = 'queue_creep';
+global.CREEP_SPAWNED = 'creep_spawned';
 
 const scheduler = new Scheduler();
 const bus = new MessageBus();

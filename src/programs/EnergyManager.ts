@@ -8,14 +8,16 @@ export class EnergyManager extends Process {
     if (_.every(this.context.sources, source => !source.enabled)) {
       const source = this.context.sources[0];
       source.enabled = true;
-      this.fork(`source_${this.context.roomName}_${this.prettyName(source.id)}`, SOURCE_PROCESS, { id: source.id });
+      const sProcess = `source_${this.context.roomName}_${EnergyManager.prettyName(source.id)}`;
+      this.fork(sProcess, SOURCE_PROCESS, { id: source.id, workPower: 0, creeps: []});
     }
 
-    this.fork(`controller_${this.context.roomName}`, CONTROLLER_PROCESS, { id: this.context.controller });
+    const cProcess = `controller_${this.context.roomName}`;
+    this.fork(cProcess, CONTROLLER_PROCESS, { id: this.context.controller, creeps: [] });
 
   }
 
-  prettyName(id: string) {
+  private static prettyName(id: string) {
     const source = Game.getObjectById(id) as Source;
     return `x${source.pos.x}_y${source.pos.y}`
   }
