@@ -18,9 +18,9 @@ export class Process {
     Logger.error(`Run method not implemented for process [${this.name}]`);
   }
 
-  fork<T extends ImageType>(name: string, image: T, context?: Context[T]) {
-    Logger.debug(`Forking process [${name}]`);
-    this.kernel.launchProcess(name, image, context);
+  fork<T extends ImageType>(name: string, image: T, context?: Context[T], delay?: number) {
+    // Logger.debug(`Forking process [${name}]`);
+    this.kernel.launchProcess(name, image, context, delay);
   }
 
   sendMessage<T extends MessageType>(type: T, message: Message[T]) {

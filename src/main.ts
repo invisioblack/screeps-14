@@ -29,6 +29,13 @@ const kernel = new Kernel(scheduler, bus);
 export const loop = ErrorMapper.wrapLoop(() => {
   Logger.info(`Current game tick is ${Game.time}`);
 
+  // Automatically delete memory of missing creeps
+  for (const name in Memory.creeps) {
+    if (!(name in Game.creeps)) {
+      delete Memory.creeps[name];
+    }
+  }
+
   if (Game.time % 5 === 0) {
     //Memory.processTable = [];
     //Logger.info(`Resetting processTable`);
@@ -38,10 +45,4 @@ export const loop = ErrorMapper.wrapLoop(() => {
   kernel.run();
   kernel.shutdown();
 
-  // Automatically delete memory of missing creeps
-  for (const name in Memory.creeps) {
-    if (!(name in Game.creeps)) {
-      delete Memory.creeps[name];
-    }
-  }
 });

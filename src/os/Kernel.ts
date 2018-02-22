@@ -47,7 +47,6 @@ export class Kernel {
       const process = this.scheduler.getNextProcess();
       if (this.bus.shouldWakeUpProcess(process.name)) {
         process.suspend = false;
-        Logger.error(`Woke ${process.name}`);
       }
       if (process.suspend !== false) continue;
       process.run();
@@ -55,11 +54,12 @@ export class Kernel {
 
   }
 
-  launchProcess<T extends ImageType>(name: string, image: T, context?: Context[T], parent?: string) {
-    Logger.debug(`Process [${name}] exists? ${!!this.processTable[name]}`);
+  launchProcess<T extends ImageType>(name: string, image: T, context?: Context[T], delay?: number, parent?: string) {
+    // Logger.debug(`Process [${name}] exists? ${!!this.processTable[name]}`);
     if (this.processTable[name]) return;
     const process = new images[image](this, { name, context });
-    Logger.debug(`Adding process [${process.name}]`);
+    if (delay) process.suspend = delay;
+    // Logger.debug(`Adding process [${process.name}]`);
     this.processTable[process.name] = process;
     this.scheduler.enqueueProcess(process);
   }
@@ -79,22 +79,26 @@ export class Kernel {
           if (entry.suspend < 0) entry.suspend = false;
         }
       }
-      if (!process.completed) list.push(entry);
-      Logger.debug(`[${entry.name}] << Completed? ${process.completed}, Suspend? ${entry.suspend}`);
+      if (!process.completed) {
+        list.push(entry);
+      } else {
+        Logger.error(`KERNEL: Completed: ${process.name}`);
+      }
+      // Logger.debug(`[${entry.name}] << Completed? ${process.completed}, Suspend? ${entry.suspend}`);
     });
-    Logger.debug(`Storing [${list.length}] processes`);
+    // Logger.debug(`Storing [${list.length}] processes`);
     Memory.processTable = list;
   }
 
   loadProcessTable() {
     Memory.processTable = Memory.processTable || {};
     _.each(Memory.processTable, entry => {
-      Logger.debug(`[${entry.name}] >> Suspend = ${entry.suspend}`);
+      // Logger.debug(`[${entry.name}] >> Suspend = ${entry.suspend}`);
       const process = new images[entry.image](this, entry);
       process.name = entry.name;
       this.processTable[entry.name] = process;
     });
-    Logger.debug(`Loading [${Memory.processTable.length}] processes`);
+    // Logger.debug(`Loading [${Memory.processTable.length}] processes`);
   }
 
   loadProcessQueue() {

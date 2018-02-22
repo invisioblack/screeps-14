@@ -1,4 +1,5 @@
 import { Process } from "os/Process";
+import {Logger} from '../utils/Logger';
 
 export class Upgrader extends Process {
   image: ImageType = UPGRADER_PROCESS;
@@ -6,6 +7,7 @@ export class Upgrader extends Process {
 
   run() {
 
+    Logger.debug(`UPGRADER[${this.context.creep}] Running.`);
     const creep = Game.creeps[this.context.creep];
 
     if (!creep) {

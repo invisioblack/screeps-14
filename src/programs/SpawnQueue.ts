@@ -16,19 +16,19 @@ export class SpawnNotifier extends Process {
   context!: Context[SPAWN_NOTIFIER_PROCESS];
 
   run() {
-    Logger.info(`Running notifier for ${this.context.creep}`);
+    Logger.debug(`NOTIFIER[${this.context.creep}] Running notifier for ${this.context.creep}`);
 
     const spawn = Game.spawns[this.context.spawn];
     const creepInfo = spawn.spawning;
     if (creepInfo) {
-      Logger.error(`Suspending for ${creepInfo.remainingTime}`);
+      Logger.error(`NOTIFIER[${this.context.creep}] Suspending for ${creepInfo.remainingTime}`);
       this.suspend = creepInfo.remainingTime;
     } else {
-      Logger.error(`Sending creep spawned ${this.context.creep}`);
+      Logger.error(`NOTIFIER[${this.context.creep}] Sending notification creep spawned ${this.context.creep}`);
       this.sendMessage(CREEP_SPAWNED, {
         wakeOwner: this.context.owner,
         creep: this.context.creep
-      })
+      });
       this.completed = true;
     }
   }
@@ -39,27 +39,29 @@ export class SpawnQueue extends Process {
   context!: Context[SPAWN_QUEUE_PROCESS];
 
   run() {
+    Logger.debug(`QUEUE: Running spawn queue process`);
     const creeps = this.receiveMessages(QUEUE_CREEP);
 
     if (creeps) {
-      Logger.error(`Running spawn queue for ${creeps.length}`);
+      Logger.error(`QUEUE: Got ${creeps.length} creeps to enqueue`);
       _.each(creeps, creep => this.context.queue.push(creep));
       this.context.queue = _.sortBy(this.context.queue, 'priority');
-      Logger.error(`Length: ${this.context.queue.length}`);
+      Logger.info(`QUEUE: Length: ${this.context.queue.length}`);
     }
 
     if (this.context.queue.length > 0) {
       const creep = this.context.queue.shift() as QueueCreepMessage;
       const spawn = Game.rooms[creep.roomName].find(FIND_MY_SPAWNS)[0] as StructureSpawn;
-      if (spawn.spawnCreep(creep.bodyParts, creep.name) === OK) {
-        Logger.error(`Spawning ${creep.name}`);
+      if (spawn.spawnCreep(creep.bodyParts, creep.name) == OK) {
+        Logger.error(`QUEUE: Spawning ${creep.name}`);
         this.suspend = creep.bodyParts.length * CREEP_SPAWN_TIME;
         this.fork(`spawn-notifier_${creep.name}`, SPAWN_NOTIFIER_PROCESS, {
           spawn: spawn.name,
           creep: creep.name,
           owner: creep.owner
-        })
+        }, 1);
       } else {
+        Logger.debug(`QUEUE: Cant spawn ${creep.name}`);
         this.context.queue.unshift(creep);
       }
     }

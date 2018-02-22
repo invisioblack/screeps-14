@@ -5,7 +5,7 @@
   "rules": {
     "forin": false,
     "interface-name": [true, "never-prefix"],
-    "member-ordering": [false],
+    "member-ordering": false,
     "no-console": [false],
     "no-namespace": [true, "allow-declarations"],
     "trailing-comma": [true, {"multiline": "never", "singleline": "never"}],
@@ -16,7 +16,8 @@
       "allow-pascal-case",
       "allow-leading-underscore"
     ],
-    "curly": [true, "ignore-same-line"],
-    "quotemark": [true, "single"],
+    "member-access": false,
+    "curly": false,
+    "quotemark": [true, "single"]
   }
 }

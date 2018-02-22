@@ -14,11 +14,10 @@ export class MessageBus {
         const owners = this.lastTickMessages[msg] as Owner[];
         if (owners) {
           for (const msg of owners) {
-            this._wakeup.push(msg.wakeOwner);
+            if (msg && msg.wakeOwner) this._wakeup.push(msg.wakeOwner);
           }
         }
       }
-      Logger.error(`WakeUp: ${JSON.stringify(this._wakeup)}`);
     }
 
     return this._wakeup!;
@@ -35,13 +34,13 @@ export class MessageBus {
   }
 
   sendMessage<T extends MessageType>(type: T, message: Message[T]) {
-    Logger.error(`BUS => Sending Message ${typeof type}`);
+    Logger.debug(`BUS[>> ${type}] Sending.`);
     if (!this.messages[type]) this.messages[type] = [];
     this.messages[type].push(message);
   }
 
   receiveMessages<T extends MessageType>(type: T): Message[T][] | undefined {
-    if (this.lastTickMessages[type]) Logger.error(`BUS <= Receiving Message ${typeof type}`);
+    if (this.lastTickMessages[type]) Logger.debug(`BUS[<< ${type}] Receiving.`);
     return this.lastTickMessages[type];
   }
 }

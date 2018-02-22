@@ -6,7 +6,7 @@ export class RoomManager extends Process {
   context!: Context[ROOM_PROCESS];
 
   run() {
-    Logger.debug(`Running room process [${this.context.roomName}]`);
+    Logger.debug(`ROOM[${this.context.roomName}] Running room process`);
 
     const sources = _.map(Game.rooms[this.context.roomName].find(FIND_SOURCES_ACTIVE), x => {
       return { id: x.id, enabled: false } as SourceStatusContext;
@@ -20,8 +20,6 @@ export class RoomManager extends Process {
       controller: controller.id
      } as EnergyContext);
 
-    // for (const source of sources) {
-    //   this.fork(`source_${source.id}`, SOURCE_PROCESS, { id: source.id });
-    // }
+    this.suspend = true; //TODO
   }
 }

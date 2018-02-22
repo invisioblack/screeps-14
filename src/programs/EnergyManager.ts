@@ -15,6 +15,7 @@ export class EnergyManager extends Process {
     const cProcess = `controller_${this.context.roomName}`;
     this.fork(cProcess, CONTROLLER_PROCESS, { id: this.context.controller, creeps: [] });
 
+    this.suspend = true; //TODO
   }
 
   private static prettyName(id: string) {

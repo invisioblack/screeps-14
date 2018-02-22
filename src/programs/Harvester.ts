@@ -1,12 +1,12 @@
-import { Process } from "os/Process";
-import { Logger } from "utils/Logger";
+import { Process } from 'os/Process';
+import { Logger } from 'utils/Logger';
 
 export class Harvester extends Process {
   image: ImageType = HARVESTER_PROCESS;
   context!: Context[HARVESTER_PROCESS];
 
   run() {
-    Logger.debug(`Harvesting with creep ${this.context.creep}`);
+    Logger.debug(`HARVESTER[${this.context.creep}] Running.`);
 
     const creep = Game.creeps[this.context.creep];
     if (!creep) {
@@ -29,6 +29,11 @@ export class Harvester extends Process {
       if (targets.length > 0) {
         if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
           creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' }})
+        }
+      } else {
+        const target = creep.room.controller!;
+        if (creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(target);
         }
       }
     }
