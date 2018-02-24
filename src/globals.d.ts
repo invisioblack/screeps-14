@@ -56,8 +56,8 @@ type RoomContext = BlankContext & {
 };
 type SourceContext = BlankContext & {
   id: string
-  workPower: number;
   creeps: string[];
+  spawning: boolean;
 };
 type SpawnQueueContext = BlankContext & {
   queue: {
@@ -85,16 +85,14 @@ type Context = {
   upgrader: UpgraderContext
 };
 
-type EmptyMessage = {}
+type EmptyMessage = {};
 type CreepMessage = {
   creep: string;
-}
+};
 
 declare const CREEP_SPAWNED = 'creep_spawned';
 type CREEP_SPAWNED = 'creep_spawned';
-type CreepSpawnedMessage = CreepMessage & {
-  wakeOwner: string;
-}
+type CreepSpawnedMessage = CreepMessage;
 
 declare const QUEUE_CREEP = 'queue_creep';
 type QUEUE_CREEP = 'queue_creep';
@@ -104,7 +102,7 @@ type QueueCreepMessage = EmptyMessage & {
   name: string;
   roomName: string;
   priority: number;
-}
+};
 
 type MessageType =
 CREEP_SPAWNED
@@ -114,5 +112,4 @@ type Message = {
   [message: string]: {}
   'queue_creep': QueueCreepMessage
   'creep_spawned': CreepSpawnedMessage
-}
-
+};

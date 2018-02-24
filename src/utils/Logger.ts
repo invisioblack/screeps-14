@@ -7,26 +7,29 @@ enum LogLevel {
 }
 
 export class Logger {
-  static debug(message: (() => string) | string): void {
-    if (typeof message === 'function') {
-      console.log(`[DEGUG] ${message()}`);
+  static consoleOnly = true;
+  static Log(message: string, process: string, subProcess?: string | string[], colorSecondary?: string): void {
+    let color = '';
+    switch (process) {
+      case 'kernel': color = 'dodgerblue'; break;
+      case 'queue': color = 'gold'; break;
+      case 'bus': color = 'fuchsia'; break;
+      case 'notifier': color = 'turquoise'; break;
+      case 'source': color = 'yellow'; break;
+      case 'controller': color = 'orange'; break;
+      case 'scheduler': color = 'purple'; break;
+      default: color = color || 'white';
+    }
+    if (this.consoleOnly) {
+      console.log(`[${Game.time}] [${process}(${subProcess ? this.subsProcesses(subProcess) : process })] ${message}`);
     } else {
-      console.log(`[DEBUG] ${message}`);
+        // tslint:disable-next-line:max-line-length
+      console.log(`[${Game.time}] <span style="color:${color};">[${process}(${subProcess ? this.subsProcesses(subProcess) : process })]</span> <span style="color:${colorSecondary || 'white'};">${message}</span>`);
     }
   }
 
-  static info(message: (() => string) | string): void {
-    if (typeof message === 'function') {
-      console.log(`<span style="color:red;">[INFO ]</span> ${message()}`);
-    } else {
-      console.log(`<span style="color:orange;">[INFO ]</span> ${message}`);
-    }
-  }
-  static error(message: (() => string) | string): void {
-    if (typeof message === 'function') {
-      console.log(`[ERROR] ${message()}`);
-    } else {
-      console.log(`<span style="color:red;">[ERROR]</span> ${message}`);
-    }
+  static subsProcesses(s: string | string[]) {
+    if (typeof s === 'string') return s;
+    return s.join(')(');
   }
 }

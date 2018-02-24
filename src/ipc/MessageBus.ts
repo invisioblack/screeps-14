@@ -1,46 +1,70 @@
 import { Logger } from 'utils/Logger';
 
-interface Owner {
-  wakeOwner: string;
-}
 export class MessageBus {
-  private lastTickMessages: {[type: string]: any[]} = {};
-  public messages: {[type: string]: any[]} = {};
-  private _wakeup: string[] | undefined;
-  private get wakeup(): string[] {
-    if (!this._wakeup) {
-      this._wakeup = [];
-      for (const msg of Object.keys(this.lastTickMessages)) {
-        const owners = this.lastTickMessages[msg] as Owner[];
-        if (owners) {
-          for (const msg of owners) {
-            if (msg && msg.wakeOwner) this._wakeup.push(msg.wakeOwner);
-          }
-        }
+  private messages: {[process: string]: MessageEntry[] } = {};
+  private interrupt: {[process: string]: boolean} = {};
+
+  sendMessage<T extends MessageType>(process: string, type: T, message: Message[T], interrupt: boolean = false): void {
+    Logger.Log(`Before: ${JSON.stringify(this.messages, null, 2)}`, 'bus', process);
+    if (!this.messages[process]) this.messages[process] = [];
+    this.messages[process]!.push({ type, message });
+    Logger.Log(`After: ${JSON.stringify(this.messages, null, 2)}`, 'bus', process);
+    this.interrupt[process] = interrupt;
+  }
+
+  receiveMessages(process: string): MessageEntry[] {
+    const entries = this.messages[process] || [];
+    this.messages[process] = [];
+    return entries;
+  }
+
+  shouldWakeUpProcess(process: string): boolean {
+    return this.interrupt[process];
+  }
+
+  init(): void {
+    Memory.messages = Memory.messages || [];
+    this.messages = {};
+    for (const entry of Memory.messages) {
+      if (!this.messages[entry.process]) this.messages[entry.process] = [];
+      this.messages[entry.process].push({ message: entry.message, type: entry.type as MessageType });
+    }
+  }
+
+  shutdown(): void {
+    Memory.messages = [];
+    for (const process in this.messages) {
+      if (this.messages[process].length === 0) continue;
+      for (const message of this.messages[process]) {
+        Memory.messages.push(this.serialize(process, message));
       }
     }
-
-    return this._wakeup!;
-  }
-
-  loadMessagesFromLastTick(messages: {[type: string]: any[]}) {
-    this.lastTickMessages = messages;
     this.messages = {};
-    this._wakeup = undefined;
+    this.interrupt = {};
   }
 
-  shouldWakeUpProcess(name: string): boolean {
-    return _.any(this.wakeup, owner => name == owner);
+  private serialize(process: string, entry: MessageEntry): SerializedMessage {
+    return {
+      process,
+      message: entry.message,
+      type: entry.type
+    };
   }
+}
 
-  sendMessage<T extends MessageType>(type: T, message: Message[T]) {
-    Logger.debug(`BUS[>> ${type}] Sending.`);
-    if (!this.messages[type]) this.messages[type] = [];
-    this.messages[type].push(message);
-  }
+interface MessageEntry {
+  message: any;
+  type: MessageType;
+}
 
-  receiveMessages<T extends MessageType>(type: T): Message[T][] | undefined {
-    if (this.lastTickMessages[type]) Logger.debug(`BUS[<< ${type}] Receiving.`);
-    return this.lastTickMessages[type];
+interface SerializedMessage {
+  message: any;
+  process: string;
+  type: string;
+}
+
+declare global {
+  interface Memory {
+    messages: SerializedMessage[];
   }
 }

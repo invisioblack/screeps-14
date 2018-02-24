@@ -27,18 +27,14 @@ const kernel = new Kernel(scheduler, bus);
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
-  Logger.info(`Current game tick is ${Game.time}`);
+  console.log('----------------------------------------------------------------------------------------------------');
+  Logger.Log(`Current game tick is ${Game.time}`, 'loop');
 
   // Automatically delete memory of missing creeps
   for (const name in Memory.creeps) {
     if (!(name in Game.creeps)) {
       delete Memory.creeps[name];
     }
-  }
-
-  if (Game.time % 5 === 0) {
-    //Memory.processTable = [];
-    //Logger.info(`Resetting processTable`);
   }
 
   kernel.boot();

@@ -1,9 +1,15 @@
-import { Process } from "os/Process";
+import { Process } from 'os/Process';
+import { Logger } from 'utils/Logger';
 
 export class Scheduler {
   processQueue: Process[] = [];
 
+  init() {
+    this.processQueue = [];
+  }
+
   enqueueProcess(process: Process) {
+    Logger.Log(`Enqueuing process`, 'scheduler', process.name);
     this.processQueue.push(process);
   }
 
@@ -12,6 +18,8 @@ export class Scheduler {
   }
 
   getNextProcess(): Process {
-    return this.processQueue.pop() as Process;
+    const process =  this.processQueue.pop() as Process;
+    Logger.Log(`Getting next process to run`, 'scheduler', process.name);
+    return process;
   }
 }

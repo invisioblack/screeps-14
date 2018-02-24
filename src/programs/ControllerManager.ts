@@ -1,5 +1,5 @@
-import { Process } from "os/Process";
-import {Logger} from "../utils/Logger";
+import { Process } from 'os/Process';
+import {Logger} from '../utils/Logger';
 
 export class ControllerManager extends Process {
   image: ImageType = CONTROLLER_PROCESS;
@@ -7,17 +7,24 @@ export class ControllerManager extends Process {
 
   run() {
     const roomName = Game.getObjectById<Source>(this.context.id)!.room.name;
-    Logger.debug(`CONTROLLER[${roomName}] Running controller process [${this.context.id}]`);
 
-    const messages = this.receiveMessages(CREEP_SPAWNED);
-    if (messages) {
-      const msgs = _.filter(messages, msg => msg.wakeOwner == this.name);
-      if (msgs && msgs.length > 0) {
-        Logger.debug(`CONTROLLER: Has messages for controller`);
-        const msg = msgs[0];
-        this.context.creeps.push(msg.creep);
-        this.fork(msg.creep + '-upgrade', UPGRADER_PROCESS, { creep: msg.creep, controller: this.context.id, upgrading: false });
-      }
+    Logger.Log(`Running`, 'controller', roomName);
+
+    const messages = this.receiveMessages();
+    if (messages.length > 0) {
+      Logger.Log(`Messages: ${messages.length}`, 'controller');
+      Logger.Log(`Before: ${JSON.stringify(this.context.creeps, null, 2)}`, 'controller', roomName);
+      const filtered = _.filter(messages, message => message.type == CREEP_SPAWNED)
+        .map(entry => entry.message as CreepSpawnedMessage)
+        .forEach(message => {
+          Logger.Log(`Got message`, 'controller', roomName);
+          this.context.creeps.push(message.creep);
+          this.fork(message.creep + '-upgrade', UPGRADER_PROCESS, {
+            creep: message.creep,
+            controller: this.context.id,
+            upgrading: false });
+        });
+      Logger.Log(`After: ${JSON.stringify(this.context.creeps, null, 2)}`, 'controller', roomName);
     }
 
     if (this.context.creeps) {
@@ -26,20 +33,21 @@ export class ControllerManager extends Process {
       });
     }
 
-
     if (!this.context.creeps || this.context.creeps && !Game.creeps[this.context.creeps[0]]) {
-      Logger.info(`CONTROLLER[${roomName}]: Queueing creeps controller`);
+      Logger.Log(`Queueing new creep`, 'controller', roomName);
 
       const creepName = `upgrader_${roomName}_${Game.time}`;
-      this.sendMessage(QUEUE_CREEP, {
+      this.sendMessage('spawn-queue', QUEUE_CREEP, {
         owner: this.name,
         name: creepName,
         bodyParts: [WORK, CARRY, MOVE],
-        roomName: roomName,
-        priority: 1
+        priority: 1,
+        roomName
       });
 
       this.suspend = true;
+    } else {
+      this.suspend = 3;
     }
   }
 }

@@ -6,7 +6,7 @@ export class InitProcess extends Process {
   context!: Context[INIT_PROCESS];
 
   run() {
-    Logger.debug(`INIT: Running init process, created at tick [${this.context.created_at}]`);
+    // Logger.debug(`INIT: Running init process, created at tick [${this.context.created_at}]`);
 
     this.fork(`spawn-queue`, SPAWN_QUEUE_PROCESS, { queue: [] });
 
@@ -14,6 +14,6 @@ export class InitProcess extends Process {
       this.fork(`room_${roomName}`, ROOM_PROCESS, { roomName } as RoomContext);
     }
 
-    this.suspend = true; //TODO
+    this.suspend = true;
   }
 }

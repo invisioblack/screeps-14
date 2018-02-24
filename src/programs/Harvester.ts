@@ -6,7 +6,7 @@ export class Harvester extends Process {
   context!: Context[HARVESTER_PROCESS];
 
   run() {
-    Logger.debug(`HARVESTER[${this.context.creep}] Running.`);
+    // Logger.debug(`HARVESTER[${this.context.creep}] Running.`);
 
     const creep = Game.creeps[this.context.creep];
     if (!creep) {

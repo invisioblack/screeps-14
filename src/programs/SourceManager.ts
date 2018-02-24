@@ -7,19 +7,24 @@ export class SourceManager extends Process {
 
   run() {
 
-    Logger.debug(`SOURCE: Running source process [${this.context.id}]`);
+    const sourceName = this.prettyName(this.context.id);
 
-    Logger.error(`SOURCE: Total creeps on context: ${this.context.creeps.length}`);
+    Logger.Log(`Running`, 'source', sourceName);
 
-    const messages = this.receiveMessages(CREEP_SPAWNED);
-    if (messages) {
-      const msgs = _.filter(messages, msg => msg.wakeOwner == this.name);
-      if (msgs && msgs.length > 0) {
-        Logger.debug(`SOURCE: Has messages for source`);
-        const msg = msgs[0];
-        this.context.creeps.push(msg.creep);
-        this.fork(msg.creep + '-harvest', HARVESTER_PROCESS, { creep: msg.creep, source: this.context.id });
-      }
+    const messages = this.receiveMessages();
+    if (messages.length > 0) {
+      Logger.Log(`Message count: ${messages.length}`, 'source', sourceName);
+      Logger.Log(`Before: ${JSON.stringify(this.context.creeps, null, 2)}`, 'source', sourceName);
+      const filtered = _.filter(messages, message => message.type == CREEP_SPAWNED)
+        .map(entry => entry.message as CreepSpawnedMessage)
+        .forEach(message => {
+          Logger.Log(`Got message`, 'source', sourceName);
+          this.context.creeps.push(message.creep);
+          this.fork(message.creep + '-harvest', HARVESTER_PROCESS, { creep: message.creep, source: this.context.id });
+        });
+      Logger.Log(`After: ${JSON.stringify(this.context.creeps, null, 2)}`, 'source', sourceName);
+      Logger.Log(`Creep count: ${this.context.creeps.length}`, 'source', sourceName);
+      this.context.spawning = false;
     }
 
     if (this.context.creeps) {
@@ -28,22 +33,25 @@ export class SourceManager extends Process {
       });
     }
 
-    Logger.info(`SOURCE: WorkRate: ${this.workRate()}`);
+    Logger.Log(`Current workrate: ${this.workRate()}`, 'source', sourceName);
 
-    if (this.workRate() < SOURCE_ENERGY_CAPACITY / ENERGY_REGEN_TIME) {
-      Logger.error(`SOURCE: Queueing creeps source`);
+    if (this.workRate() < (SOURCE_ENERGY_CAPACITY / ENERGY_REGEN_TIME)) {
+      Logger.Log(`Queueing new creep`, 'source', sourceName);
       const roomName = Game.getObjectById<Source>(this.context.id)!.room.name;
       const creepName = `miner_${roomName}_${Game.time}`;
       const creepBody = [WORK, CARRY, MOVE];
-      this.sendMessage(QUEUE_CREEP, {
+      this.sendMessage('spawn-queue', QUEUE_CREEP, {
         owner: this.name,
         name: creepName,
         bodyParts: creepBody,
-        roomName: roomName,
-        priority: this.context.creeps.length == 0 ? 0 : 1
+        priority: this.context.creeps.length === 0 ? 0 : 1,
+        roomName
       });
 
       this.suspend = true;
+      this.context.spawning = true;
+    } else {
+      this.suspend = 3;
     }
   }
 
@@ -57,5 +65,10 @@ export class SourceManager extends Process {
     });
 
     return HARVEST_POWER * workRate;
+  }
+
+  private prettyName(id: string) {
+    const source = Game.getObjectById(id) as Source;
+    return `x${source.pos.x}_y${source.pos.y}`;
   }
 }

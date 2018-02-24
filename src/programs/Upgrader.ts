@@ -7,7 +7,7 @@ export class Upgrader extends Process {
 
   run() {
 
-    Logger.debug(`UPGRADER[${this.context.creep}] Running.`);
+    // Logger.debug(`UPGRADER[${this.context.creep}] Running.`);
     const creep = Game.creeps[this.context.creep];
 
     if (!creep) {
@@ -15,7 +15,7 @@ export class Upgrader extends Process {
       return;
     }
 
-    if (this.context.upgrading && creep.carry.energy == 0) {
+    if (this.context.upgrading && creep.carry.energy === 0) {
       this.context.upgrading = false;
       creep.say('🔄 harvest');
     }
