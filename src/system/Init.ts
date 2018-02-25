@@ -12,10 +12,6 @@ export class InitProcess extends Process {
       this.fork(`room_${roomName}`, ROOM_PROCESS, { roomName } as RoomContext);
     }
 
-    this.suspend = true;
-  }
-
-  print(obj: any) {
-    return JSON.stringify(obj, null, 2);
+    this.suspend = 10;
   }
 }

@@ -1,4 +1,4 @@
-import {Process} from "../os/Process";
+import {Process} from '../os/Process';
 
 declare global {
 
@@ -6,8 +6,8 @@ declare global {
   type BUILDER_PROCESS = 'builder';
 
   type BuilderContext = CreepContext & {
-    site: string;
-  }
+    sites: string[];
+  };
 }
 
 export class Builder extends Process {
@@ -16,5 +16,31 @@ export class Builder extends Process {
 
   run() {
 
+    const creep = Game.creeps[this.context.creep];
+    if (!creep) {
+      this.completed = true;
+      return;
+    }
+
+    const sites = _.reduce(this.context.sites, (acc, x) => {
+      acc.push(Game.getObjectById(x) as ConstructionSite);
+      return acc;
+    }, new Array<ConstructionSite>());
+
+    const site = sites[0];
+
+    const source = creep.room.find(FIND_SOURCES)[0];
+
+    if (creep.carry.energy < creep.carryCapacity) {
+      if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(source, { visualizePathStyle: { stroke: 'red' } });
+      }
+    } else if (creep.build(site) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(site, { visualizePathStyle: { stroke: 'orange' } });
+    }
+
+    if (site.progress != site.progressTotal) {
+      this.context.sites.pop();
+    }
   }
 }

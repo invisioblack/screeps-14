@@ -11,9 +11,12 @@ import { Upgrader } from 'programs/Upgrader';
 import { InitProcess } from 'system/Init';
 import { Logger } from 'utils/Logger';
 import { Builder } from '../programs/Builder';
+import { ConstructionManager } from '../programs/ConstructionManager';
 import { SpawnNotifier } from '../programs/SpawnNotifier';
+
 export const images: {[type: string]: any} = {
   builder: Builder,
+  construction: ConstructionManager,
   controller: ControllerManager,
   energy: EnergyManager,
   harvester: Harvester,

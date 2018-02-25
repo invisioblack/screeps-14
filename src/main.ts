@@ -6,6 +6,7 @@ import { MessageBus } from './ipc/MessageBus';
 
 declare var global: any;
 global.BUILDER_PROCESS = 'builder';
+global.CONSTRUCTION_PROCESS = 'construction';
 global.CONTROLLER_PROCESS = 'controller';
 global.ENERGY_PROCESS = 'energy';
 global.HARVESTER_PROCESS = 'harvester';

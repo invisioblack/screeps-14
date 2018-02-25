@@ -21,9 +21,10 @@ export class RoomManager extends Process {
      } as EnergyContext);
 
     this.fork(`construction-manager_${this.context.roomName}`, CONSTRUCTION_PROCESS, {
-       room: this.context.roomName
+       room: this.context.roomName,
+       creeps: []
      });
 
-    this.suspend = true;
+    this.suspend = 10;
   }
 }
