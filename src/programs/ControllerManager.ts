@@ -10,6 +10,8 @@ export class ControllerManager extends Process {
 
     Logger.Log(`Running`, 'controller', roomName);
 
+    this.completed = true; // TODO
+
     const messages = this.receiveMessages();
     if (messages.length > 0) {
       Logger.Log(`Messages: ${messages.length}`, 'controller');

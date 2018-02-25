@@ -15,20 +15,21 @@ export class Harvester extends Process {
     }
 
     const source = Game.getObjectById(this.context.source) as Source;
+    const position = new RoomPosition(this.context.spot.x, this.context.spot.y, this.context.spot.room);
 
     if (creep.carry.energy < creep.carryCapacity) {
       if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' } })
+        creep.moveTo(position, { visualizePathStyle: { stroke: '#ffaa00' } });
       }
     } else {
       const targets = creep.room.find(FIND_STRUCTURES, {
         filter: structure => structure.structureType == STRUCTURE_SPAWN
-        && structure.energy < structure.energyCapacity
+          && structure.energy < structure.energyCapacity
       });
 
       if (targets.length > 0) {
         if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' }})
+          creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' } });
         }
       } else {
         const target = creep.room.controller!;
@@ -38,4 +39,11 @@ export class Harvester extends Process {
       }
     }
   }
+}
+
+declare global {
+  type HarvesterContext = CreepContext & {
+    source: string;
+    spot: MiningSpot
+  };
 }

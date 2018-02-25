@@ -8,7 +8,9 @@ enum LogLevel {
 
 export class Logger {
   static consoleOnly = true;
-  static Log(message: string, process: string, subProcess?: string | string[], colorSecondary?: string): void {
+  static traceProcess: string | undefined = '';
+  // tslint:disable-next-line:max-line-length
+  static Log(message: string | (() => string), process: string, subProcess?: string | string[], colorSecondary?: string): void {
     let color = '';
     switch (process) {
       case 'kernel': color = 'dodgerblue'; break;
@@ -20,6 +22,9 @@ export class Logger {
       case 'scheduler': color = 'purple'; break;
       default: color = color || 'white';
     }
+
+    if (process !== this.traceProcess && this.traceProcess !== undefined) return;
+
     if (this.consoleOnly) {
       console.log(`[${Game.time}] [${process}(${subProcess ? this.subsProcesses(subProcess) : process })] ${message}`);
     } else {

@@ -19,6 +19,7 @@ type UPGRADER_PROCESS = 'upgrader';
 type ImageType =
 BUILDER_PROCESS
 | CONTROLLER_PROCESS
+| CONSTRUCTION_PROCESS
 | ENERGY_PROCESS
 | INIT_PROCESS
 | HARVESTER_PROCESS
@@ -45,20 +46,14 @@ type EnergyContext = BlankContext & {
   sources: SourceStatusContext[];
   controller: string;
 }
-type HarvesterContext = CreepContext & {
-  source: string;
-}
+
 type InitContext = BlankContext & {
   created_at: number;
 };
 type RoomContext = BlankContext & {
   roomName: string;
 };
-type SourceContext = BlankContext & {
-  id: string
-  creeps: string[];
-  spawning: boolean;
-};
+
 type SpawnQueueContext = BlankContext & {
   queue: {
     name: string;
@@ -75,6 +70,7 @@ type Context = {
   [image: string]: {}
   builder: BuilderContext
   controller: ControllerContext
+  construction: ConstructionContext
   energy: EnergyContext
   harvester: HarvesterContext
   init: InitContext

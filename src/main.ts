@@ -1,7 +1,7 @@
-import { ErrorMapper } from "utils/ErrorMapper";
-import { Logger } from "utils/Logger";
-import { Kernel } from "os/Kernel";
-import { Scheduler } from "os/Scheduler";
+import { Kernel } from 'os/Kernel';
+import { Scheduler } from 'os/Scheduler';
+import { ErrorMapper } from 'utils/ErrorMapper';
+import { Logger } from 'utils/Logger';
 import { MessageBus } from './ipc/MessageBus';
 
 declare var global: any;
