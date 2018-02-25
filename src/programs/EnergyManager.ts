@@ -6,10 +6,11 @@ export class EnergyManager extends Process {
 
   run() {
     if (_.every(this.context.sources, source => !source.enabled)) {
-      const source = this.context.sources[0];
-      source.enabled = true;
-      const sourceName = `source_${this.context.roomName}_${EnergyManager.prettyName(source.id)}`;
-      const spots = EnergyManager.getPositionsAround(Game.getObjectById<Source>(source.id)!.pos);
+      const sourcectx = this.context.sources[0];
+      sourcectx.enabled = true;
+      const sourceName = `source_${this.context.roomName}_${EnergyManager.prettyName(sourcectx.id)}`;
+      const source = Game.getObjectById<Source>(sourcectx.id)!;
+      const spots = EnergyManager.getPositionsAround(source.room.name, source.pos);
       this.fork(sourceName, SOURCE_PROCESS, { id: source.id, creeps: [], spots });
     }
 
@@ -24,13 +25,13 @@ export class EnergyManager extends Process {
     return `x${source.pos.x}_y${source.pos.y}`;
   }
 
-  private static getPositionsAround(pos: RoomPosition): MiningSpot[] {
+  private static getPositionsAround(room: string, pos: RoomPosition): MiningSpot[] {
     const positions = [];
     for (let x = pos.x - 1; x <= pos.x + 1; x++) {
       for (let y = pos.y - 1; y <= pos.y + 1; y++) {
         if (x == pos.x && y == pos.y) continue;
-        if (Game.rooms.sim.lookForAt(LOOK_TERRAIN, new RoomPosition(x, y, 'sim'))[0] == 'plain') {
-          positions.push({ x, y, room: 'sim', reserved: false });
+        if (Game.rooms[room].lookForAt(LOOK_TERRAIN, new RoomPosition(x, y, room))[0] == 'plain') {
+          positions.push({ x, y, room, reserved: false });
         }
       }
     }
