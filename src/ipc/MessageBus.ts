@@ -5,10 +5,10 @@ export class MessageBus {
   private interrupt: {[process: string]: boolean} = {};
 
   sendMessage<T extends MessageType>(process: string, type: T, message: Message[T], interrupt: boolean = false): void {
-    Logger.Log(`Before: ${JSON.stringify(this.messages, null, 2)}`, 'bus', process);
+    // Logger.Log(`Before: ${JSON.stringify(this.messages, null, 2)}`, 'bus', process);
     if (!this.messages[process]) this.messages[process] = [];
     this.messages[process]!.push({ type, message });
-    Logger.Log(`After: ${JSON.stringify(this.messages, null, 2)}`, 'bus', process);
+    // Logger.Log(`After: ${JSON.stringify(this.messages, null, 2)}`, 'bus', process);
     this.interrupt[process] = interrupt;
   }
 

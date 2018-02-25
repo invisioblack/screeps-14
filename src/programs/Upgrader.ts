@@ -1,4 +1,4 @@
-import { Process } from "os/Process";
+import { Process } from 'os/Process';
 import {Logger} from '../utils/Logger';
 
 export class Upgrader extends Process {
@@ -21,8 +21,8 @@ export class Upgrader extends Process {
     }
 
     if (!this.context.upgrading && creep.carry.energy == creep.carryCapacity) {
-      this.context.upgrading = true;
       creep.say('⚡ upgrade');
+      this.context.upgrading = true;
     }
 
     if (this.context.upgrading) {

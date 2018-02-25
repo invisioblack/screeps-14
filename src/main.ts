@@ -23,13 +23,14 @@ global.CREEP_SPAWNED = 'creep_spawned';
 
 const scheduler = new Scheduler();
 const bus = new MessageBus();
-const kernel = new Kernel(scheduler, bus);
+const logger = new Logger();
+const kernel = new Kernel(scheduler, bus, logger);
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
-  console.log('----------------------------------------------------------------------------------------------------');
-  Logger.Log(`Current game tick is ${Game.time}`, 'loop');
+  console.log('-----------------------------------------------------------------------------------------');
+  console.log(`Current game tick is ${Game.time}`);
 
   // Automatically delete memory of missing creeps
   for (const name in Memory.creeps) {

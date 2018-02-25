@@ -1,15 +1,5 @@
 import {Process} from '../os/Process';
 
-declare global {
-
-  const BUILDER_PROCESS = 'builder';
-  type BUILDER_PROCESS = 'builder';
-
-  type BuilderContext = CreepContext & {
-    sites: string[];
-  };
-}
-
 export class Builder extends Process {
   image: ImageType = BUILDER_PROCESS;
   context!: Context[BUILDER_PROCESS];
@@ -22,25 +12,58 @@ export class Builder extends Process {
       return;
     }
 
-    const sites = _.reduce(this.context.sites, (acc, x) => {
-      acc.push(Game.getObjectById(x) as ConstructionSite);
-      return acc;
-    }, new Array<ConstructionSite>());
+    this.log(() => 'Running');
 
-    const site = sites[0];
+    let sites: ConstructionSite[] = [];
+    if (!this.context.manual && this.context.sites.length == 0) {
+      sites = _.map(this.context.sites, site => Game.getObjectById(site) as ConstructionSite);
+    } else {
+      sites = creep.room.find(FIND_MY_CONSTRUCTION_SITES, site => site.progress !== site.progressTotal);
+      this.context.sites = _.map(sites, site => site.id);
+    }
+
+    const target = sites[0];
 
     const source = creep.room.find(FIND_SOURCES)[0];
 
-    if (creep.carry.energy < creep.carryCapacity) {
+    if (this.context.building && creep.carry.energy === 0) {
+      this.context.building = false;
+      creep.say('🔄 harvest');
+    }
+
+    if (!this.context.building && creep.carry.energy == creep.carryCapacity) {
+      creep.say('⚒️ build');
+      this.context.building = true;
+    }
+
+    if (this.context.building) {
+      if (creep.build(target) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(target, { visualizePathStyle: { stroke: 'orange' } });
+      }
+    } else {
       if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
         creep.moveTo(source, { visualizePathStyle: { stroke: 'red' } });
       }
-    } else if (creep.build(site) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(site, { visualizePathStyle: { stroke: 'orange' } });
     }
 
-    if (site.progress != site.progressTotal) {
+    if (target.progress != target.progressTotal) {
       this.context.sites.pop();
     }
   }
+
+  log(message: () => string) {
+    super.log(message, this.context.creep);
+  }
+}
+
+declare global {
+
+  const BUILDER_PROCESS = 'builder';
+  type BUILDER_PROCESS = 'builder';
+
+  type BuilderContext = CreepContext & {
+    sites: string[];
+    manual: boolean;
+    building: boolean;
+  };
 }

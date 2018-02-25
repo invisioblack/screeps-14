@@ -30,12 +30,7 @@ export class EnergyManager extends Process {
       for (let y = pos.y - 1; y <= pos.y + 1; y++) {
         if (x == pos.x && y == pos.y) continue;
         if (Game.rooms.sim.lookForAt(LOOK_TERRAIN, new RoomPosition(x, y, 'sim'))[0] == 'plain') {
-          positions.push({
-            x,
-            y,
-            room: 'sim',
-            reserved: false
-          });
+          positions.push({ x, y, room: 'sim', reserved: false });
         }
       }
     }

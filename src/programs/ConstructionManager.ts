@@ -11,8 +11,13 @@ export class ConstructionManager extends Process {
       return;
     }
 
+    this.log(() => `Running`, room.name);
+
     // Nothing to do
-    if (room.controller!.level < 2) return;
+    if (room.controller!.level < 2) {
+      this.suspend = 3;
+      return;
+    }
 
     const messages = this.receiveMessages();
     if (messages.length > 0) {
@@ -20,11 +25,12 @@ export class ConstructionManager extends Process {
         .map(entry => entry.message as CreepSpawnedMessage)
         .forEach(message => {
           this.context.creeps.push(message.creep);
+          this.fork(message.creep + '-build', BUILDER_PROCESS, { creep: message.creep, sites: [], manual: true, building: false });
       });
     }
 
     const targets = room.find(FIND_MY_CONSTRUCTION_SITES, {
-      filter: structure => structure.structureType == STRUCTURE_ROAD
+      filter: structure => structure.structureType == STRUCTURE_ROAD || structure.structureType == STRUCTURE_EXTENSION
     });
 
     this.context.creeps = _.filter(this.context.creeps, creep => !!Game.creeps[creep]);
@@ -32,6 +38,7 @@ export class ConstructionManager extends Process {
     if (this.context.creeps.length === 0 && targets.length > 0) {
       this.sendMessage('spawn-queue', QUEUE_CREEP, {
         name: `builder_${room.name}_${Game.time}`,
+        roomName: room.name,
         owner: this.name,
         priority: 2,
         bodyParts: [WORK, CARRY, MOVE]

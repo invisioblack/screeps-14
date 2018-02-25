@@ -8,12 +8,13 @@ enum LogLevel {
 
 export class Logger {
   static consoleOnly = true;
-  static traceProcess: string | undefined = '';
+  static traceProcess: RegExp | undefined = /construction|builder/;
   // tslint:disable-next-line:max-line-length
-  static Log(message: string | (() => string), process: string, subProcess?: string | string[], colorSecondary?: string): void {
+  public Log(message: string | (() => string), process: string, context?: string | string[], messageColor?: string): void {
     let color = '';
     switch (process) {
       case 'kernel': color = 'dodgerblue'; break;
+      case 'builder': color = 'blue'; break;
       case 'queue': color = 'gold'; break;
       case 'bus': color = 'fuchsia'; break;
       case 'notifier': color = 'turquoise'; break;
@@ -23,13 +24,15 @@ export class Logger {
       default: color = color || 'white';
     }
 
-    if (process !== this.traceProcess && this.traceProcess !== undefined) return;
+    if (Logger.traceProcess && !Logger.traceProcess!.test(process)) return;
 
-    if (this.consoleOnly) {
-      console.log(`[${Game.time}] [${process}(${subProcess ? this.subsProcesses(subProcess) : process })] ${message}`);
+    const msg = (typeof message === 'string') ? message : message();
+
+    if (Logger.consoleOnly) {
+      console.log(`[${Game.time}] [${process}(${context ? Logger.subsProcesses(context) : process })] ${msg}`);
     } else {
         // tslint:disable-next-line:max-line-length
-      console.log(`[${Game.time}] <span style="color:${color};">[${process}(${subProcess ? this.subsProcesses(subProcess) : process })]</span> <span style="color:${colorSecondary || 'white'};">${message}</span>`);
+      console.log(`[${Game.time}] <span style="color:${color};">[${process}(${context ? Logger.subsProcesses(context) : process })]</span> <span style="color:${messageColor || 'white'};">${msg}</span>`);
     }
   }
 

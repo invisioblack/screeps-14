@@ -40,6 +40,10 @@ export class Process {
   receiveMessages() {
     return this.kernel.bus.receiveMessages(this.name);
   }
+
+  log(message: () => string, context?: string | string[], messageColor?: string) {
+    this.kernel.log(message, this.image, context, messageColor);
+  }
 }
 
 export interface SerializedProcess {

@@ -30,7 +30,7 @@ export const images: {[type: string]: any} = {
 export class Kernel {
   private processTable: {[name: string]: Process} = {};
 
-  constructor(private scheduler: Scheduler, public bus: MessageBus) {
+  constructor(private scheduler: Scheduler, public bus: MessageBus, private logger: Logger) {
   }
 
   boot() {
@@ -45,15 +45,23 @@ export class Kernel {
     this.bus.shutdown();
   }
 
+  log(message: () => string, process: string, context?: string | string[], messageColor?: string) {
+    this.logger.Log(message, process, context, messageColor);
+  }
+
+  private logKernel(message: () => string, context?: string | string[], messageColor?: string) {
+    this.log(message, 'kernel', context, messageColor);
+  }
+
   run() {
 
     while (this.scheduler.hasProcessToRun()) {
       const process = this.scheduler.getNextProcess();
       if (process.suspend !== false) {
-        Logger.Log(`Skipping process`, 'kernel', process.name);
+        this.logKernel(() => `Skipping process`, process.name);
         continue;
       }
-      Logger.Log(`Running process`, 'kernel', process.name);
+      this.logKernel(() => `Running process`, process.name);
       process.run();
     }
 
@@ -62,9 +70,9 @@ export class Kernel {
   launchProcess<T extends ImageType>(name: string, image: T, context?: Context[T], delay?: number, parent?: string) {
     if (this.processTable[name]) return;
     const process = new images[image](this, { name, context });
-    Logger.Log(`Launched new process`, 'kernel', name);
+    this.logKernel(() => `Launched new process`, name);
     if (delay) {
-      Logger.Log(`Delaying process for ${delay} tick(s)`, 'kernel', name);
+      this.logKernel(() => `Delaying process for ${delay} tick(s)`, name);
       process.suspend = delay;
     }
     this.processTable[process.name] = process;
@@ -87,13 +95,13 @@ export class Kernel {
       };
       if (entry.suspend !== false) {
         if (this.bus.shouldWakeUpProcess(entry.name)) {
-          Logger.Log(`Waking`, 'kernel', entry.name, 'yellow');
+          this.logKernel(() => `Waking`, entry.name, 'yellow');
           entry.suspend = false;
         }
         if (typeof entry.suspend === 'number') {
           entry.suspend--;
           if (entry.suspend < 0) {
-            Logger.Log(`Unsuspending`, 'kernel', entry.name);
+            this.logKernel(() => `Unsuspending`, entry.name);
             entry.suspend = false;
           }
         }
@@ -101,7 +109,7 @@ export class Kernel {
       if (!process.completed) {
         list.push(entry);
       } else {
-        Logger.Log(`Removing`, 'kernel', entry.name, 'red');
+        this.logKernel(() => `Removing`, entry.name, 'red');
       }
     });
     Memory.processTable = list;
@@ -113,7 +121,7 @@ export class Kernel {
     _.each(Memory.processTable, entry => {
       const process = new images[entry.image](this, entry);
       process.name = entry.name;
-      Logger.Log(`Loading to process table`, 'kernel', entry.name);
+      this.logKernel(() => `Loading to process table`, entry.name);
       this.processTable[entry.name] = process;
     });
   }
@@ -121,7 +129,7 @@ export class Kernel {
   loadProcessQueue() {
     this.scheduler.init();
     _.forEach(this.processTable, process => {
-      Logger.Log(`Loading to scheduler`, 'kernel', process.name);
+      this.logKernel(() => `Loading to scheduler`, process.name);
       this.scheduler.enqueueProcess(process);
     });
   }

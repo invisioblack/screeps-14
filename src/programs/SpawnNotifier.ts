@@ -7,16 +7,16 @@ export class SpawnNotifier extends Process {
 
   run() {
     // tslint:disable-next-line:max-line-length
-    Logger.Log(`Running, created at ${this.context.tick}`, 'notifier', [this.name, this.context.process]);
+    this.log(() => `Running, created at ${this.context.tick}`, this.context.process);
 
     const spawn = Game.spawns[this.context.spawn];
     const creepInfo = spawn.spawning;
     if (creepInfo) {
-      Logger.Log(`Suspending for ${creepInfo.remainingTime} ticks`, 'notifier', [this.name, this.context.process]);
+      this.log(() => `Suspending for ${creepInfo.remainingTime} ticks`, this.context.process);
       this.suspend = creepInfo.remainingTime;
     } else {
       // tslint:disable-next-line:max-line-length
-      Logger.Log(`Sending notification creep '${this.context.creep}' spawned`, 'notifier', [this.name, this.context.process]);
+      this.log(() => `Sending notification creep '${this.context.creep}' spawned`, this.context.process);
       this.sendMessage(this.context.process, CREEP_SPAWNED, {
         creep: this.context.creep
       }, true);
