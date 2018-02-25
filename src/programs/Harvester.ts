@@ -18,7 +18,7 @@ export class Harvester extends Process {
     const position = new RoomPosition(this.context.spot.x, this.context.spot.y, this.context.spot.room);
 
     if (creep.carry.energy < creep.carryCapacity) {
-      if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+      if (position == creep.pos && creep.harvest(source) == ERR_NOT_IN_RANGE) {
         creep.moveTo(position, { visualizePathStyle: { stroke: '#ffaa00' } });
       }
     } else {
