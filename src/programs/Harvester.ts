@@ -17,27 +17,69 @@ export class Harvester extends Process {
     const source = Game.getObjectById(this.context.source) as Source;
     const position = new RoomPosition(this.context.spot.x, this.context.spot.y, this.context.spot.room);
 
-    if (creep.carry.energy < creep.carryCapacity) {
-      if (position == creep.pos && creep.harvest(source) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(position, { visualizePathStyle: { stroke: '#ffaa00' } });
+    if (this.context.working && creep.carry.energy === 0) {
+      this.context.working = false;
+    }
+
+    if (!this.context.working && creep.carry.energy === creep.carryCapacity) {
+      this.context.working = true;
+    }
+
+    if (this.context.working) {
+      switch (this.context.job) {
+        case 'miner': {
+          if (position == creep.pos) {
+            creep.harvest(source);
+          } else {
+            creep.moveTo(position);
+          }
+        }
+        case 'upgrader': {
+          if (creep.upgradeController(source.room.controller!) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(source.room.controller!);
+          }
+        }
+        case 'builder': {
+          const targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES, site => site.progress !== site.progressTotal);
+          if (targets.length == 0) {
+            this.context.job = 'miner';
+            this.log(() => `Turning into miner`);
+          } else if (creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(targets[0]);
+          }
+        }
+        default: {
+          this.context.job = 'miner';
+        }
       }
     } else {
-      const targets = creep.room.find(FIND_STRUCTURES, {
-        filter: structure => structure.structureType == STRUCTURE_SPAWN
-          && structure.energy < structure.energyCapacity
-      });
-
-      if (targets.length > 0) {
-        if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' } });
+      switch (this.context.job) {
+        case 'miner': {
+          const targets = creep.room.find(FIND_MY_STRUCTURES, {
+            filter: structure => (structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_EXTENSION)
+            && structure.energy < structure.energyCapacity
+          });
+          if (targets.length == 0) {
+            if (creep.room.controller!.level < 2) {
+              this.context.job = 'upgrader';
+              this.log(() => `Turning into upgrader`);
+            } else {
+              this.context.job = 'builder';
+              this.log(() => `Turning into builder`);
+            }
+          }
         }
-      } else {
-        const target = creep.room.controller!;
-        if (creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(target);
+        default: {
+          if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(source);
+          }
         }
       }
     }
+  }
+
+  log(message: () => string) {
+    super.log(message, this.context.creep);
   }
 }
 
@@ -45,5 +87,7 @@ declare global {
   type HarvesterContext = CreepContext & {
     source: string;
     spot: MiningSpot
+    job: string;
+    working: boolean;
   };
 }

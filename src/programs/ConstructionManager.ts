@@ -30,14 +30,18 @@ export class ConstructionManager extends Process {
     }
 
     const targets = room.find(FIND_MY_CONSTRUCTION_SITES, {
-      filter: structure => structure.structureType == STRUCTURE_ROAD || structure.structureType == STRUCTURE_EXTENSION
+      filter: structure => structure.structureType == STRUCTURE_ROAD
+      || structure.structureType == STRUCTURE_EXTENSION
+      || structure.structureType == STRUCTURE_CONTAINER
     });
 
     this.context.creeps = _.filter(this.context.creeps, creep => !!Game.creeps[creep]);
 
     if (this.context.creeps.length === 0 && targets.length > 0) {
+      const creepName = `builder_${room.name}_${Game.time}`;
+      this.log(() => `Queueing new creep '${creepName}`);
       this.sendMessage('spawn-queue', QUEUE_CREEP, {
-        name: `builder_${room.name}_${Game.time}`,
+        name: creepName,
         roomName: room.name,
         owner: this.name,
         priority: 2,

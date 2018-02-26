@@ -32,6 +32,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
   console.log('-----------------------------------------------------------------------------------------');
   console.log(`Current game tick is ${Game.time}`);
 
+  const before = Game.cpu.getUsed();
+
   // Automatically delete memory of missing creeps
   for (const name in Memory.creeps) {
     if (!(name in Game.creeps)) {
@@ -42,5 +44,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
   kernel.boot();
   kernel.run();
   kernel.shutdown();
+
+  const after = Game.cpu.getUsed();
+  console.log(`[${Game.time}] TOTAL CPU: ${after - before}, BUCKET: ${Game.cpu.bucket}`);
 
 });

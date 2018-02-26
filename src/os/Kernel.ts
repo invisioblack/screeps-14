@@ -62,7 +62,10 @@ export class Kernel {
         continue;
       }
       this.logKernel(() => `Running process`, process.name);
+      const before = Game.cpu.getUsed();
       process.run();
+      const after = Game.cpu.getUsed();
+      // console.log(`${process.name}, cpu: ${after - before}`);
     }
 
   }
