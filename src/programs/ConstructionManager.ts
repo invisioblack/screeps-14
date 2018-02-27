@@ -46,7 +46,8 @@ export class ConstructionManager extends Process {
 
     if (this.context.repairer && !Game.creeps[this.context.repairer]) this.context.repairer = undefined;
 
-    if (this.context.creeps.length === 0 && targets.length > 0) {
+    if (this.context.creeps.length === 0 && targets.length > 0
+      || (this.context.creeps.length < 2 && targets.length > 2)) {
       const creepName = `builder_${room.name}_${Game.time}`;
       this.log(() => `Queueing new creep '${creepName}`);
       this.sendMessage('spawn-queue', QUEUE_CREEP, {

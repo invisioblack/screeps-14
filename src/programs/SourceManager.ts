@@ -27,14 +27,18 @@ export class SourceManager extends Process {
           this.log(() => `Got message`, sourceName);
           if (message.creep.indexOf('hauler') >= 0) {
             const haulerSpot = _.filter(this.context.spots, s => s.hauler == message.creep)[0];
+            // tslint:disable-next-line:max-line-length
+            const from = _.filter(source.room.lookForAt(LOOK_STRUCTURES, new RoomPosition(haulerSpot.x, haulerSpot.y, source.room.name)), structure => {
+              return structure.structureType == STRUCTURE_CONTAINER;
+            })[0];
             const containersWithEnergy = source.room.find(FIND_STRUCTURES, {
               filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store.energy < structure.storeCapacity
             });
             this.fork(message.creep + '-hauler', HAULER_PROCESS, {
               creep: message.creep,
               transporting: false,
-              from: new RoomPosition(haulerSpot.x, haulerSpot.y, source.room.name),
-              to: containersWithEnergy[0].pos
+              from: from.id,
+              to: containersWithEnergy[0].id
             });
           } else {
             this.context.creeps.push(message.creep);
@@ -48,19 +52,19 @@ export class SourceManager extends Process {
                 }).length > 0) {
                   spot.container = true;
                 }
-                if (!spot.hauler) {
-                  const creepName = `hauler_${source.room.name}_${Game.time}`;
-                  const creepBody = [CARRY, CARRY, CARRY, MOVE, MOVE];
-                  this.sendMessage('spawn-queue', QUEUE_CREEP, {
-                    owner: this.name,
-                    name: creepName,
-                    bodyParts: creepBody,
-                    priority: this.context.creeps.length === 0 ? 0 : 1,
-                    roomName: source.room.name
-                  });
-                  spot.hauler = creepName;
-                  this.suspend = true;
-                }
+              }
+              if (spot.container && !spot.hauler) {
+                const creepName = `hauler_${source.room.name}_${Game.time}`;
+                const creepBody = [CARRY, CARRY, CARRY, MOVE, MOVE];
+                this.sendMessage('spawn-queue', QUEUE_CREEP, {
+                  owner: this.name,
+                  name: creepName,
+                  bodyParts: creepBody,
+                  priority: this.context.creeps.length === 0 ? 0 : 1,
+                  roomName: source.room.name
+                });
+                spot.hauler = creepName;
+                this.suspend = true;
               }
               break;
             }
@@ -76,6 +80,10 @@ export class SourceManager extends Process {
     if (this.context.creeps) {
       this.context.creeps = _.filter(this.context.creeps, creep => !!Game.creeps[creep]);
     }
+
+    _.forEach(this.context.spots, spot => {
+      if (spot.hauler && !Game.creeps[spot.hauler]) spot.hauler = undefined;
+    });
 
     _.forEach(this.context.spots, spot => {
       if (spot.reserved !== false && !Game.creeps[spot.reserved as string]) {

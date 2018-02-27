@@ -24,6 +24,8 @@ export class Builder extends Process {
     }
 
     const target = sites[0];
+    // tslint:disable-next-line:max-line-length
+    this.log(() => `Target: ${target.structureType}, ${target.progress} / ${target.progressTotal} = ${Math.floor(target.progress * 100 / target.progressTotal)}`);
 
     const source = creep.room.find(FIND_SOURCES)[0];
 

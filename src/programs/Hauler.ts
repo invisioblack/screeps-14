@@ -24,43 +24,44 @@ export class Hauler extends Process {
 
     if (this.context.transporting) {
       this.log(() => `Trying to transpor`);
-      if (this.samePosition(this.creep.pos, this.context.to)) {
-        const targets: Structure[] = _.filter(this.creep.room.lookForAt(LOOK_STRUCTURES, this.creep.pos), structure => {
-          return structure.structureType == STRUCTURE_CONTAINER;
-        });
-        if (targets.length > 0) {
-          this.log(() => `Trying to transfer`);
-          this.creep.transfer(targets[0], RESOURCE_ENERGY);
-        }
+      const to = Game.getObjectById(this.context.to) as StructureContainer;
+      if (this.samePosition(this.creep.pos, to.pos) || this.creep.pos.isNearTo(to.pos)) {
+        // const targets: Structure[] = _.filter(this.creep.room.lookForAt(LOOK_STRUCTURES, this.creep.pos), structure => {
+        //   return structure.structureType == STRUCTURE_CONTAINER;
+        // });
+        // if (targets.length > 0) {
+        this.log(() => `Trying to transfer`);
+        this.creep.transfer(to, RESOURCE_ENERGY);
+        // }
       } else {
         this.log(() => `Trying to move to transfer`);
-        this.creep.moveTo(this.context.to);
+        this.creep.moveTo(to);
       }
     } else {
       this.log(() => `Trying to get energy`);
-      let mypos: RoomPosition;
-      if (this.creep.pos.x - 1 == this.context.from.x && this.creep.pos.y + 1 == this.context.from.y) {
-        this.log(() => `Adjacente`);
-        mypos = new RoomPosition(this.creep.pos.x - 1, this.creep.pos.y + 1, this.creep.room.name);
-      } else {
-        this.log(() => `Mesmo spot`);
-        mypos = this.creep.pos;
-      }
-      if (this.samePosition(this.creep.pos, this.context.from)
-      || (this.creep.pos.x - 1 == this.context.from.x && this.creep.pos.y + 1 == this.context.from.y)) {
+      // let mypos: RoomPosition;
+      // if (this.creep.pos.isNearTo(this.context.from)) {
+      //   this.log(() => `Adjacente`);
+      //   mypos = this.creep.pos.findInRange()
+      // } else {
+      //   this.log(() => `Mesmo spot`);
+      //   mypos = this.creep.pos;
+      // }
+      const from = Game.getObjectById(this.context.from) as StructureContainer;
+      if (this.samePosition(this.creep.pos, from.pos) || this.creep.pos.isNearTo(from.pos)) {
         this.log(() => `Procurando estrutura`);
-        const targets: Structure[] = _.filter(this.creep.room.lookForAt(LOOK_STRUCTURES, mypos), structure => {
-          return structure.structureType == STRUCTURE_CONTAINER;
-        });
-        this.log(() => `Encontrou ${JSON.stringify(this.creep.room.lookForAt(LOOK_STRUCTURES, mypos), null, 2)}`);
-        if (targets.length > 0) {
-          this.log(() => `Trying to withdrawn`);
-          this.creep.withdraw(targets[0], RESOURCE_ENERGY);
-        }
+        // const targets: Structure[] = _.filter(this.creep.room.lookForAt(LOOK_STRUCTURES, mypos), structure => {
+        //   return structure.structureType == STRUCTURE_CONTAINER;
+        // });
+        // this.log(() => `Encontrou ${JSON.stringify(this.creep.room.lookForAt(LOOK_STRUCTURES, mypos), null, 2)}`);
+        // if (targets.length > 0) {
+        this.log(() => `Trying to withdrawn`);
+        this.creep.withdraw(from, RESOURCE_ENERGY);
+        // }
       } else {
         // tslint:disable-next-line:max-line-length
-        this.log(() => `Trying to move to withdrawn, current: ${this.creep.pos.x}, ${this.creep.pos.y}, need: ${this.context.from.x}, ${this.context.from.y}`);
-        this.creep.moveTo(this.context.from);
+        this.log(() => `Trying to move to withdrawn`);
+        this.creep.moveTo(from);
       }
     }
   }
@@ -85,8 +86,8 @@ declare global {
   // }
 
   type HaulerContext = CreepContext & {
-    from: RoomPosition;
-    to: RoomPosition;
+    from: string;
+    to: string;
     transporting: boolean;
   };
 }
