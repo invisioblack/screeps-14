@@ -5,9 +5,16 @@ export class ControllerManager extends Process {
   image: ImageType = CONTROLLER_PROCESS;
   context!: Context[CONTROLLER_PROCESS];
   room!: Room;
+  controller!: StructureController;
 
   run() {
-    this.room = Game.getObjectById<Source>(this.context.id)!.room;
+    this.controller = Game.getObjectById<StructureController>(this.context.id)!;
+    this.room = this.controller.room;
+
+    if (!this.controller.my) {
+      this.completed = true;
+      return;
+    }
 
     this.log(() => `Running`);
     const messages = this.receiveMessages();

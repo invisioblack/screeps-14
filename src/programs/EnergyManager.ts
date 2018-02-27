@@ -5,6 +5,17 @@ export class EnergyManager extends Process {
   context!: Context[ENERGY_PROCESS];
 
   run() {
+    this.log(() => `Running`, this.context.roomName);
+    if (this.context.roomName == 'W59N21') {
+      this.completed = true;
+      return;
+    }
+    if (!Game.rooms[this.context.roomName]
+      || !Game.rooms[this.context.roomName].controller
+      || !Game.rooms[this.context.roomName].controller!.my) {
+      this.completed = true;
+      return;
+    }
     if (_.every(this.context.sources, source => !source.enabled)) {
       const sourcectx = this.context.sources[0];
       sourcectx.enabled = true;
@@ -15,6 +26,7 @@ export class EnergyManager extends Process {
       this.fork(sourceName, SOURCE_PROCESS, { id: source.id, creeps: [], spots: [spots[0]] });
     }
 
+    this.log(() => `Room: ${this.context.roomName}`);
     const controllerName = `controller_${this.context.roomName}`;
     this.fork(controllerName, CONTROLLER_PROCESS, { id: this.context.controller, creeps: [] });
 
@@ -32,7 +44,7 @@ export class EnergyManager extends Process {
       for (let y = pos.y - 1; y <= pos.y + 1; y++) {
         if (x == pos.x && y == pos.y) continue;
         if (Game.rooms[room].lookForAt(LOOK_TERRAIN, new RoomPosition(x, y, room))[0] == 'plain') {
-          positions.push({ x, y, room, reserved: false });
+          positions.push({ x, y, room, reserved: false, container: false });
         }
       }
     }

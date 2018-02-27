@@ -54,7 +54,7 @@ export class Builder extends Process {
     }
 
     if (target.progress != target.progressTotal) {
-      this.context.sites.pop();
+      this.context.sites.shift();
     }
   }
 

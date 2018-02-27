@@ -16,8 +16,10 @@ export class Hauler extends Process {
 
     if (this.context.transporting && this.creep.carry.energy === 0) {
       this.context.transporting = false;
+      this.creep.say('🔄 withdraw');
     } else if (!this.context.transporting && this.creep.carry.energy === this.creep.carryCapacity) {
       this.context.transporting = true;
+      this.creep.say('⚒️ transporting');
     }
 
     if (this.context.transporting) {

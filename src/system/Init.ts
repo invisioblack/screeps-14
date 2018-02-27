@@ -8,8 +8,9 @@ export class InitProcess extends Process {
   run() {
     this.fork(`spawn-queue`, SPAWN_QUEUE_PROCESS, { queue: [] });
 
-    for (const roomName of Object.keys(Game.rooms)) {
-      this.fork(`room_${roomName}`, ROOM_PROCESS, { roomName } as RoomContext);
+    for (const room of _.filter(Game.rooms, r => r.controller && r.controller.my)) {
+      this.fork(`room_${room.name}`, ROOM_PROCESS, { roomName: room.name } as RoomContext);
+      this.log(() => `Forking room ${room.name}`);
     }
 
     this.suspend = 10;

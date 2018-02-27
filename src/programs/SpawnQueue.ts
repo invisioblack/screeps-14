@@ -20,7 +20,12 @@ export class SpawnQueue extends Process {
     if (this.context.queue.length > 0) {
       const creep = this.context.queue.shift() as QueueCreepMessage;
       this.log(() => `Room: ${creep.roomName}`);
-      const spawn = Game.rooms[creep.roomName].find(FIND_MY_SPAWNS)[0] as StructureSpawn;
+      if (!Game.rooms[creep.roomName]) {
+        return;
+      }
+      const spawns = Game.rooms[creep.roomName].find(FIND_MY_SPAWNS) as StructureSpawn[];
+      this.log(() => `Spawns: ${JSON.stringify(spawns, null, 2)}`);
+      const spawn = spawns[0];
       if (spawn.spawnCreep(creep.bodyParts, creep.name) == OK) {
         this.log(() => `Spawning creep '${creep.name}'`, creep.owner);
         this.suspend = creep.bodyParts.length * CREEP_SPAWN_TIME;

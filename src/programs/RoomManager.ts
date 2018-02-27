@@ -6,6 +6,16 @@ export class RoomManager extends Process {
   context!: Context[ROOM_PROCESS];
 
   run() {
+
+    this.log(() => `Running`);
+
+    if (!Game.rooms[this.context.roomName]
+      || !Game.rooms[this.context.roomName].controller
+      || !Game.rooms[this.context.roomName].controller!.my) {
+      this.completed = true;
+      return;
+    }
+
     const sources = _
       .map(Game.rooms[this.context.roomName]
         .find(FIND_SOURCES_ACTIVE), x => {

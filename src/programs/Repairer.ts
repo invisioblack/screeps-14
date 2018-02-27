@@ -27,8 +27,7 @@ export class Repairer extends Process {
     if (this.context.repairing) {
       this.log(() => `Trying to repair`);
       const targets = this.creep.room.find(FIND_STRUCTURES, {
-        filter: structure => structure.hits < structure.hitsMax * 0.9
-        && structure.structureType == STRUCTURE_ROAD
+        filter: structure => (structure.hits < structure.hitsMax * 0.9 && structure.structureType == STRUCTURE_ROAD)
       });
 
       if (targets.length > 0 && this.creep.repair(targets[0]) == ERR_NOT_IN_RANGE) {
