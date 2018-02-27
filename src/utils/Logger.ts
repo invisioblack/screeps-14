@@ -8,7 +8,7 @@ enum LogLevel {
 
 export class Logger {
   static consoleOnly = true;
-  static traceProcess: RegExp | undefined = undefined; // = /construction|builder|harvester/;
+  static traceProcess: RegExp | undefined = undefined;
   // tslint:disable-next-line:max-line-length
   public Log(message: string | (() => string), process: string, context?: string | string[], messageColor?: string): void {
     let color = '';

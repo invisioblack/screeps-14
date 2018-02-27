@@ -24,8 +24,15 @@ export class ConstructionManager extends Process {
       const filtered = _.filter(messages, message => message.type == CREEP_SPAWNED)
         .map(entry => entry.message as CreepSpawnedMessage)
         .forEach(message => {
-          this.context.creeps.push(message.creep);
-          this.fork(message.creep + '-build', BUILDER_PROCESS, { creep: message.creep, sites: [], manual: true, building: false });
+          if (message.creep.indexOf('repair') >= 0) {
+            this.log(() => `Got new repairer message`);
+            this.fork(message.creep + '-repair', REPAIRER_PROCESS, { creep: message.creep, repairing: false });
+            this.context.repairer = message.creep;
+          } else {
+            this.log(() => `Got new builder message`);
+            this.context.creeps.push(message.creep);
+            this.fork(message.creep + '-build', BUILDER_PROCESS, { creep: message.creep, sites: [], manual: true, building: false });
+          }
       });
     }
 
@@ -36,6 +43,8 @@ export class ConstructionManager extends Process {
     });
 
     this.context.creeps = _.filter(this.context.creeps, creep => !!Game.creeps[creep]);
+
+    if (this.context.repairer && !Game.creeps[this.context.repairer]) this.context.repairer = undefined;
 
     if (this.context.creeps.length === 0 && targets.length > 0) {
       const creepName = `builder_${room.name}_${Game.time}`;
@@ -51,6 +60,28 @@ export class ConstructionManager extends Process {
       this.suspend = true;
     } else {
       this.suspend = 3;
+    }
+
+    const repairTargets = room.find(FIND_STRUCTURES, {
+      filter: structure => structure.structureType != STRUCTURE_WALL && structure.structureType != STRUCTURE_CONTROLLER
+    });
+    const hits = _.sum(repairTargets, x => x.hitsMax - x.hits);
+
+    // tslint:disable-next-line:max-line-length
+    // this.log(() => `${JSON.stringify(_.map(repairTargets, x => [x.hits, x.hitsMax, x.structureType]), null, 2)} Hits to repair: ${hits}`);
+
+    this.log(() => `Has repairer? ${this.context.repairer}`);
+
+    if (hits > CREEP_LIFE_TIME && !this.context.repairer) {
+      const creepName = `repairer_${room.name}_${Game.time}`;
+      this.log(() => `Queueing new creep '${creepName}`);
+      this.sendMessage('spawn-queue', QUEUE_CREEP, {
+        name: creepName,
+        roomName: room.name,
+        owner: this.name,
+        priority: 2,
+        bodyParts: [WORK, CARRY, MOVE]
+      } as QueueCreepMessage);
     }
 
     // const spawn = room.find(FIND_MY_SPAWNS)[0];
@@ -242,6 +273,7 @@ declare global {
   type CONSTRUCTION_PROCESS = 'construction';
   type ConstructionContext = BlankContext & {
     room: string;
-    creeps: string[]
+    creeps: string[];
+    repairer?: string;
   };
 }

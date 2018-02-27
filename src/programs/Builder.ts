@@ -41,7 +41,14 @@ export class Builder extends Process {
         creep.moveTo(target, { visualizePathStyle: { stroke: 'orange' } });
       }
     } else {
-      if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+      const targets = creep.room.find(FIND_STRUCTURES, {
+        filter: structure => structure.structureType == STRUCTURE_CONTAINER
+      });
+      if (targets.length > 0) {
+        if (creep.withdraw(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(targets[0], { visualizePathStyle: { stroke: 'red' } });
+        }
+      } else if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
         creep.moveTo(source, { visualizePathStyle: { stroke: 'red' } });
       }
     }

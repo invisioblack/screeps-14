@@ -4,6 +4,8 @@ import { Scheduler } from 'os/Scheduler';
 import { ControllerManager } from 'programs/ControllerManager';
 import { EnergyManager } from 'programs/EnergyManager';
 import { Harvester } from 'programs/Harvester';
+import { Hauler } from 'programs/Hauler';
+import { Repairer } from 'programs/Repairer';
 import { RoomManager } from 'programs/RoomManager';
 import { SourceManager } from 'programs/SourceManager';
 import { SpawnQueue } from 'programs/SpawnQueue';
@@ -19,8 +21,10 @@ export const images: {[type: string]: any} = {
   construction: ConstructionManager,
   controller: ControllerManager,
   energy: EnergyManager,
+  hauler: Hauler,
   harvester: Harvester,
   init: InitProcess,
+  repairer: Repairer,
   room: RoomManager,
   source: SourceManager,
   spawn_notifier: SpawnNotifier,

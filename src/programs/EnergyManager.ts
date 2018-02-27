@@ -11,13 +11,14 @@ export class EnergyManager extends Process {
       const sourceName = `source_${this.context.roomName}_${EnergyManager.prettyName(sourcectx.id)}`;
       const source = Game.getObjectById<Source>(sourcectx.id)!;
       const spots = EnergyManager.getPositionsAround(source.room.name, source.pos);
-      this.fork(sourceName, SOURCE_PROCESS, { id: source.id, creeps: [], spots });
+
+      this.fork(sourceName, SOURCE_PROCESS, { id: source.id, creeps: [], spots: [spots[0]] });
     }
 
     const controllerName = `controller_${this.context.roomName}`;
     this.fork(controllerName, CONTROLLER_PROCESS, { id: this.context.controller, creeps: [] });
 
-    this.suspend = true;
+    this.suspend = 10;
   }
 
   private static prettyName(id: string) {

@@ -27,7 +27,7 @@ export class SourceManager extends Process {
             break;
           }
           // tslint:disable-next-line:max-line-length
-          this.fork(message.creep + '-harvest', HARVESTER_PROCESS, { creep: message.creep, source: this.context.id, spot, working: false, job: 'miner' });
+          this.fork(message.creep + '-harvest', HARVESTER_PROCESS, { creep: message.creep, source: this.context.id, spot, harvesting: false });
         });
       this.log(() => `After: ${JSON.stringify(this.context.creeps, null, 2)}`, sourceName);
       this.log(() => `Creep count: ${this.context.creeps.length}`, sourceName);

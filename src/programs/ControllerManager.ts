@@ -33,7 +33,7 @@ export class ControllerManager extends Process {
       });
     }
 
-    if (!this.context.creeps || this.context.creeps && !Game.creeps[this.context.creeps[0]]) {
+    if (!this.context.creeps || this.context.creeps.length < 2 ) {
       this.log(() => `Queueing new creep`);
 
       const creepName = `upgrader_${this.room.name}_${Game.time}`;

@@ -22,8 +22,10 @@ BUILDER_PROCESS
 | CONSTRUCTION_PROCESS
 | ENERGY_PROCESS
 | INIT_PROCESS
+| HAULER_PROCESS
 | HARVESTER_PROCESS
 | NOOP_PROCESS
+| REPAIRER_PROCESS
 | ROOM_PROCESS
 | SOURCE_PROCESS
 | SPAWN_QUEUE_PROCESS
@@ -72,8 +74,10 @@ type Context = {
   controller: ControllerContext
   construction: ConstructionContext
   energy: EnergyContext
+  hauler: HaulerContext
   harvester: HarvesterContext
   init: InitContext
+  repairer: RepairerContext
   room: RoomContext
   source: SourceContext
   spawn_queue: SpawnQueueContext

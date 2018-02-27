@@ -32,8 +32,16 @@ export class Upgrader extends Process {
       }
     } else {
       const source = creep.room.find(FIND_SOURCES)[0] as Source;
-      if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' }});
+      const targets = creep.room.find(FIND_STRUCTURES, {
+        filter: structure => structure.structureType == STRUCTURE_CONTAINER
+        && structure.store.energy > 0
+      });
+      if (targets.length > 0) {
+        if (creep.withdraw(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(targets[0], { visualizePathStyle: { stroke: 'red' } });
+        }
+      } else if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(source, { visualizePathStyle: { stroke: 'red' } });
       }
     }
   }
