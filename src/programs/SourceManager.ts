@@ -27,14 +27,14 @@ export class SourceManager extends Process {
           this.log(() => `Got message`, sourceName);
           if (message.creep.indexOf('hauler') >= 0) {
             const haulerSpot = _.filter(this.context.spots, s => s.hauler == message.creep)[0];
-            const to = source.room.find(FIND_STRUCTURES, {
-              filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store.energy < 100
-            })[0];
+            const containersWithEnergy = source.room.find(FIND_STRUCTURES, {
+              filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store.energy < structure.storeCapacity
+            });
             this.fork(message.creep + '-hauler', HAULER_PROCESS, {
               creep: message.creep,
               transporting: false,
               from: new RoomPosition(haulerSpot.x, haulerSpot.y, source.room.name),
-              to: to.pos
+              to: containersWithEnergy[0].pos
             });
           } else {
             this.context.creeps.push(message.creep);

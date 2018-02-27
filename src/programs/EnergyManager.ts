@@ -16,15 +16,16 @@ export class EnergyManager extends Process {
       this.completed = true;
       return;
     }
-    if (_.every(this.context.sources, source => !source.enabled)) {
-      const sourcectx = this.context.sources[0];
+    _
+    .filter(this.context.sources, sourcectx => !sourcectx.enabled)
+    .forEach(sourcectx => {
       sourcectx.enabled = true;
       const sourceName = `source_${this.context.roomName}_${EnergyManager.prettyName(sourcectx.id)}`;
       const source = Game.getObjectById<Source>(sourcectx.id)!;
       const spots = EnergyManager.getPositionsAround(source.room.name, source.pos);
 
-      this.fork(sourceName, SOURCE_PROCESS, { id: source.id, creeps: [], spots: [spots[0]] });
-    }
+      this.fork(sourceName, SOURCE_PROCESS, { id: source.id, creeps: [], spots });
+    });
 
     this.log(() => `Room: ${this.context.roomName}`);
     const controllerName = `controller_${this.context.roomName}`;

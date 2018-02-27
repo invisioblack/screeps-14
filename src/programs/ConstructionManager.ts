@@ -82,6 +82,8 @@ export class ConstructionManager extends Process {
         priority: 2,
         bodyParts: [WORK, CARRY, MOVE]
       } as QueueCreepMessage);
+
+      this.suspend = true;
     }
 
     // const spawn = room.find(FIND_MY_SPAWNS)[0];

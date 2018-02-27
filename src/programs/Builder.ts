@@ -19,6 +19,7 @@ export class Builder extends Process {
       sites = _.map(this.context.sites, site => Game.getObjectById(site) as ConstructionSite);
     } else {
       sites = creep.room.find(FIND_MY_CONSTRUCTION_SITES, site => site.progress !== site.progressTotal);
+      sites = _.forEach(creep.room.find(FIND_CONSTRUCTION_SITES, site => site.progress !== site.progressTotal), s => sites.push(s));
       this.context.sites = _.map(sites, site => site.id);
     }
 
@@ -51,10 +52,6 @@ export class Builder extends Process {
       } else if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
         creep.moveTo(source, { visualizePathStyle: { stroke: 'red' } });
       }
-    }
-
-    if (target.progress != target.progressTotal) {
-      this.context.sites.shift();
     }
   }
 

@@ -64,10 +64,7 @@ type SpawnQueueContext = BlankContext & {
     priority: number
   }[]
 }
-type UpgraderContext = CreepContext & {
-  controller: string;
-  upgrading: boolean;
-}
+
 type Context = {
   [image: string]: {}
   builder: BuilderContext
