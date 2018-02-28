@@ -25,6 +25,10 @@ export class Hauler extends Process {
     if (this.context.transporting) {
       this.log(() => `Trying to transpor`);
       const to = Game.getObjectById(this.context.to) as StructureContainer;
+      if (!to)  {
+        this.completed = true;
+        return;
+      }
       if (this.samePosition(this.creep.pos, to.pos) || this.creep.pos.isNearTo(to.pos)) {
         // const targets: Structure[] = _.filter(this.creep.room.lookForAt(LOOK_STRUCTURES, this.creep.pos), structure => {
         //   return structure.structureType == STRUCTURE_CONTAINER;

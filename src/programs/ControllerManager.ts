@@ -40,7 +40,7 @@ export class ControllerManager extends Process {
       });
     }
 
-    if (!this.context.creeps || this.context.creeps.length < 3 ) {
+    if (!this.context.creeps || this.context.creeps.length < 4 ) {
       this.log(() => `Queueing new creep`);
 
       const creepName = `upgrader_${this.room.name}_${Game.time}`;
@@ -48,7 +48,7 @@ export class ControllerManager extends Process {
         owner: this.name,
         name: creepName,
         bodyParts: [WORK, CARRY, MOVE],
-        priority: 1,
+        priority: 1 + this.context.creeps.length,
         roomName: this.room.name
       });
 

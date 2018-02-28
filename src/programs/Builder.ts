@@ -12,22 +12,45 @@ export class Builder extends Process {
       return;
     }
 
+    const room = Game.rooms[this.context.roomName];
+    if (!room) {
+      this.completed = true;
+      return;
+    }
+
     this.log(() => 'Running');
 
     let sites: ConstructionSite[] = [];
     if (!this.context.manual && this.context.sites.length == 0) {
       sites = _.map(this.context.sites, site => Game.getObjectById(site) as ConstructionSite);
+      this.log(() => `From context`);
     } else {
-      sites = creep.room.find(FIND_MY_CONSTRUCTION_SITES, site => site.progress !== site.progressTotal);
-      sites = _.forEach(creep.room.find(FIND_CONSTRUCTION_SITES, site => site.progress !== site.progressTotal), s => sites.push(s));
+      this.log(() => `From room`);
+      sites = room.find(FIND_MY_CONSTRUCTION_SITES);
+      // tslint:disable-next-line:max-line-length
+      if (sites.length == 0) {
+        sites = room.find(FIND_CONSTRUCTION_SITES);
+      }
       this.context.sites = _.map(sites, site => site.id);
+    }
+    this.log(() => `Sites: ${JSON.stringify(sites, null, 2)}`);
+
+    if (sites.length == 0) {
+      this.completed = true;
+      return;
     }
 
     const target = sites[0];
+    if (!target) {
+      sites.shift();
+      this.context.sites.shift();
+      this.log(() => 'Removing');
+      return;
+    }
     // tslint:disable-next-line:max-line-length
-    this.log(() => `Target: ${target.structureType}, ${target.progress} / ${target.progressTotal} = ${Math.floor(target.progress * 100 / target.progressTotal)}`);
+    this.log(() => `Target: ${target.structureType}, ${target.progress} / ${target.progressTotal} = ${Math.floor(target.progress * 100 / target.progressTotal)}%`);
 
-    const source = creep.room.find(FIND_SOURCES)[0];
+    const source = room.find(FIND_SOURCES)[0];
 
     if (this.context.building && creep.carry.energy === 0) {
       this.context.building = false;
@@ -44,7 +67,7 @@ export class Builder extends Process {
         creep.moveTo(target, { visualizePathStyle: { stroke: 'orange' } });
       }
     } else {
-      const targets = creep.room.find(FIND_STRUCTURES, {
+      const targets = room.find(FIND_STRUCTURES, {
         filter: structure => structure.structureType == STRUCTURE_CONTAINER
       });
       if (targets.length > 0) {
@@ -71,5 +94,6 @@ declare global {
     sites: string[];
     manual: boolean;
     building: boolean;
+    roomName: string;
   };
 }

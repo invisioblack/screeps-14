@@ -26,7 +26,14 @@ export class SpawnQueue extends Process {
       const spawns = Game.rooms[creep.roomName].find(FIND_MY_SPAWNS) as StructureSpawn[];
       this.log(() => `Spawns: ${JSON.stringify(spawns, null, 2)}`);
       const spawn = spawns[0];
-      if (spawn.spawnCreep(creep.bodyParts, creep.name) == OK) {
+      const structures = spawn.room.find(FIND_STRUCTURES, {
+        filter: structure => structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_EXTENSION
+      }) as Array<(StructureSpawn | StructureExtension)>;
+      this.log(() => `Total energy: ${_.sum(structures, x => x.energy)}`);
+      const result = spawn.spawnCreep(creep.bodyParts, creep.name, { memory: { owner: creep.owner }, energyStructures: structures});
+      if (result == ERR_NAME_EXISTS) return;
+      this.log(() => `Result: ${result}}`);
+      if (result == OK) {
         this.log(() => `Spawning creep '${creep.name}'`, creep.owner);
         this.suspend = creep.bodyParts.length * CREEP_SPAWN_TIME;
         this.fork(`spawn-notifier_${creep.name}`, SPAWN_NOTIFIER_PROCESS, {

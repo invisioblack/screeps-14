@@ -39,7 +39,9 @@ export class Harvester extends Process {
     } else {
       this.log(() => `Want to transfer`);
       let targets = this.creep.room.find(FIND_STRUCTURES, {
-        filter: structure => (structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_EXTENSION)
+        filter: structure => (structure.structureType == STRUCTURE_SPAWN
+          || structure.structureType == STRUCTURE_EXTENSION
+          || structure.structureType == STRUCTURE_TOWER)
           && structure.energy < structure.energyCapacity
       });
 

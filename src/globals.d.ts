@@ -30,6 +30,7 @@ BUILDER_PROCESS
 | SOURCE_PROCESS
 | SPAWN_QUEUE_PROCESS
 | SPAWN_NOTIFIER_PROCESS
+| TOWER_PROCESS
 | UPGRADER_PROCESS;
 type BlankContext = {};
 type SourceStatusContext = {
@@ -79,6 +80,7 @@ type Context = {
   source: SourceContext
   spawn_queue: SpawnQueueContext
   spawn_notifier: SpawnNotifierContext
+  tower: TowerDefenseContext
   upgrader: UpgraderContext
 };
 

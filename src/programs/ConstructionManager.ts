@@ -31,7 +31,8 @@ export class ConstructionManager extends Process {
           } else {
             this.log(() => `Got new builder message`);
             this.context.creeps.push(message.creep);
-            this.fork(message.creep + '-build', BUILDER_PROCESS, { creep: message.creep, sites: [], manual: true, building: false });
+            // tslint:disable-next-line:max-line-length
+            this.fork(message.creep + '-build', BUILDER_PROCESS, { creep: message.creep, roomName: room.name, sites: [], manual: true, building: false });
           }
       });
     }
@@ -46,8 +47,11 @@ export class ConstructionManager extends Process {
 
     if (this.context.repairer && !Game.creeps[this.context.repairer]) this.context.repairer = undefined;
 
-    if (this.context.creeps.length === 0 && targets.length > 0
-      || (this.context.creeps.length < 2 && targets.length > 2)) {
+    const buildersNeeded = Math.floor(_.sum(targets, target => target.progressTotal - target.progress)
+    / (this.context.creeps.length * CREEP_LIFE_TIME * BUILD_POWER));
+    this.log(() => `Needed '${buildersNeeded}`);
+
+    if (this.context.creeps.length < 4 && this.context.creeps.length < buildersNeeded) {
       const creepName = `builder_${room.name}_${Game.time}`;
       this.log(() => `Queueing new creep '${creepName}`);
       this.sendMessage('spawn-queue', QUEUE_CREEP, {

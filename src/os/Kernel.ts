@@ -15,6 +15,7 @@ import { Logger } from 'utils/Logger';
 import { Builder } from '../programs/Builder';
 import { ConstructionManager } from '../programs/ConstructionManager';
 import { SpawnNotifier } from '../programs/SpawnNotifier';
+import { TowerDefense } from '../programs/TowerDefense';
 
 export const images: {[type: string]: any} = {
   builder: Builder,
@@ -29,15 +30,20 @@ export const images: {[type: string]: any} = {
   source: SourceManager,
   spawn_notifier: SpawnNotifier,
   spawn_queue: SpawnQueue,
+  tower: TowerDefense,
   upgrader: Upgrader
 };
 export class Kernel {
   private processTable: {[name: string]: Process} = {};
+  private cpuLimit = 10;
 
   constructor(private scheduler: Scheduler, public bus: MessageBus, private logger: Logger) {
   }
 
   boot() {
+    const bucketAllowed = Game.cpu && Game.cpu.bucket > 7000 ? Game.cpu.bucket - 7000 : 0 || 0;
+    this.cpuLimit = Game.cpu && Game.cpu.limit && Game.cpu.limit + bucketAllowed || 10;
+    if (this.cpuLimit > 300) this.cpuLimit = 300;
     this.loadProcessTable();
     this.loadProcessQueue();
     this.bus.init();
@@ -59,19 +65,20 @@ export class Kernel {
 
   run() {
 
-    while (this.scheduler.hasProcessToRun()) {
+    while (this.scheduler.hasProcessToRun() && this.hasEnoughCpu()) {
       const process = this.scheduler.getNextProcess();
       if (process.suspend !== false) {
         this.logKernel(() => `Skipping process`, process.name);
         continue;
       }
       this.logKernel(() => `Running process`, process.name);
-      const before = Game.cpu.getUsed();
       process.run();
-      const after = Game.cpu.getUsed();
-      // console.log(`${process.name}, cpu: ${after - before}`);
     }
 
+  }
+
+  hasEnoughCpu() {
+    return Game.cpu.getUsed() <= this.cpuLimit;
   }
 
   launchProcess<T extends ImageType>(name: string, image: T, context?: Context[T], delay?: number, parent?: string) {
