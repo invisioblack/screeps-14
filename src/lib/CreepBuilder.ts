@@ -38,13 +38,17 @@ export class CreepBuilder {
   static genericParts = [WORK, WORK, CARRY, MOVE];
   static genericAdditionalParts = [WORK, MOVE];
   static baseParts: PartList = {
+    builder: CreepBuilder.genericParts,
     defender: [RANGED_ATTACK, MOVE],
+    hauler: [CARRY, MOVE],
     miner: CreepBuilder.genericParts,
+    repairer: CreepBuilder.genericParts,
     upgrader: CreepBuilder.genericParts
   };
 
   static additionalParts: PartList = {
     builder: [WORK, CARRY, MOVE],
+    hauler: [CARRY, MOVE],
     miner: [WORK, MOVE],
     repairer: [WORK, CARRY, MOVE],
     upgrader: [WORK, CARRY, MOVE]
@@ -64,6 +68,7 @@ export class CreepBuilder {
   static typeLength: {[type: string]: number} = {
     builder: 24,
     miner: 12,
+    hauler: 28,
     repairer: 12,
     upgrader: 24
   };

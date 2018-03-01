@@ -35,7 +35,8 @@ export class Hauler extends Process {
         // });
         // if (targets.length > 0) {
         this.log(() => `Trying to transfer`);
-        this.creep.transfer(to, RESOURCE_ENERGY);
+        const result = this.creep.transfer(to, RESOURCE_ENERGY);
+        this.log(() => `Result ${result}`);
         // }
       } else {
         this.log(() => `Trying to move to transfer`);
@@ -60,7 +61,8 @@ export class Hauler extends Process {
         // this.log(() => `Encontrou ${JSON.stringify(this.creep.room.lookForAt(LOOK_STRUCTURES, mypos), null, 2)}`);
         // if (targets.length > 0) {
         this.log(() => `Trying to withdrawn`);
-        this.creep.withdraw(from, RESOURCE_ENERGY);
+        const result = this.creep.withdraw(from, RESOURCE_ENERGY);
+        this.log(() => `Result ${result}`);
         // }
       } else {
         // tslint:disable-next-line:max-line-length

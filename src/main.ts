@@ -45,6 +45,11 @@ global.sites = (room: string) => {
       { type: site.structureType, progress: site.progress + '/' + site.progressTotal })));
 };
 
+global.messages = () => {
+  return global
+    .obj(Memory.messages);
+};
+
 const scheduler = new Scheduler();
 const bus = new MessageBus();
 const logger = new Logger();

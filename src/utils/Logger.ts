@@ -8,9 +8,12 @@ enum LogLevel {
 
 export class Logger {
   static consoleOnly = true;
-  static traceProcess: RegExp | undefined = /builder/;
+  static traceProcess: RegExp | undefined = /controller|energy|hauler|spawn/;
   // tslint:disable-next-line:max-line-length
   public Log(message: string | (() => string), process: string, context?: string | string[], messageColor?: string): void {
+    if (Logger.traceProcess === undefined) return;
+    if (!Logger.traceProcess!.test(process)) return;
+
     let color = '';
     switch (process) {
       case 'kernel': color = 'dodgerblue'; break;
@@ -23,9 +26,6 @@ export class Logger {
       case 'scheduler': color = 'purple'; break;
       default: color = color || 'white';
     }
-
-    if (Logger.traceProcess === undefined) return;
-    if (!Logger.traceProcess!.test(process)) return;
 
     const msg = (typeof message === 'string') ? message : message();
 

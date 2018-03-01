@@ -10,6 +10,7 @@ export class ControllerManager extends Process {
   run() {
     this.controller = Game.getObjectById<StructureController>(this.context.id)!;
     this.room = this.controller.room;
+    console.log(`Entrou no controller`);
 
     if (!this.controller.my) {
       this.completed = true;
@@ -40,7 +41,30 @@ export class ControllerManager extends Process {
       });
     }
 
-    if (!this.context.creeps || this.context.creeps.length < 4 ) {
+    if (!this.context.hauler) {
+      this.log(() => `No hauler`);
+      const initialPos = this.controller.pos;
+      const emptyContainer = this.controller.pos.findInRange<Structure>(FIND_STRUCTURES, 3, {
+        filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store.energy === 0
+      });
+      if (emptyContainer.length > 0) {
+        this.log(() => `Needs hauler`);
+        this.context.hauler = true;
+        this.sendMessage(`energy-manager_${this.controller.room.name}`, FILL_CONTAINER, {
+          container: emptyContainer[0].id
+        });
+      } else {
+        this.log(() => `Does not need hauler`);
+      }
+    }
+
+      // LOOK_STRUCTURES,
+      // Math.max(initialPos.x - 2, 0),
+      // Math.max(initialPos.y - 2, 0),
+      // Math.min(initialPos.x + 2, 49),
+      // Math.min(initialPos.y + 2, 49));
+
+    if (!this.context.creeps || this.context.creeps.length < 4) {
       this.log(() => `Queueing new creep`);
 
       const creepName = `upgrader_${this.room.name}_${Game.time}`;
@@ -61,4 +85,9 @@ export class ControllerManager extends Process {
   log(message: () => string) {
     super.log(message, this.room.name);
   }
+}
+
+interface UpgradingSpot {
+  pos: RoomPosition;
+  reserved: boolean | string;
 }

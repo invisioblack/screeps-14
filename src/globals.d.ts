@@ -40,14 +40,10 @@ type SourceStatusContext = {
 type ControllerContext = BlankContext & {
   id: string;
   creeps: string[];
+  hauler?: boolean;
 }
 type CreepContext = BlankContext & {
   creep: string;
-}
-type EnergyContext = BlankContext & {
-  roomName: string;
-  sources: SourceStatusContext[];
-  controller: string;
 }
 
 type InitContext = BlankContext & {
@@ -104,11 +100,13 @@ type QueueCreepMessage = EmptyMessage & {
 };
 
 type MessageType =
-CREEP_SPAWNED
+FILL_CONTAINER
+| CREEP_SPAWNED
 | QUEUE_CREEP;
 
 type Message = {
   [message: string]: {}
+  'fill_container': FillContainerMessage
   'queue_creep': QueueCreepMessage
   'creep_spawned': CreepSpawnedMessage
 };

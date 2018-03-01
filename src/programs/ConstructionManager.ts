@@ -1,4 +1,5 @@
 import { Process } from 'os/Process';
+import { CreepBuilder } from '../lib/CreepBuilder';
 
 export class ConstructionManager extends Process {
   image: ImageType = CONSTRUCTION_PROCESS;
@@ -77,7 +78,7 @@ export class ConstructionManager extends Process {
 
     this.log(() => `Has repairer? ${this.context.repairer}`);
 
-    if (hits > CREEP_LIFE_TIME && !this.context.repairer) {
+    if (hits > CREEP_LIFE_TIME * 3 && !this.context.repairer) {
       const creepName = `repairer_${room.name}_${Game.time}`;
       this.log(() => `Queueing new creep '${creepName}`);
       this.sendMessage('spawn-queue', QUEUE_CREEP, {

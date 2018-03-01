@@ -27,7 +27,8 @@ export class RoomManager extends Process {
     this.fork(`energy-manager_${this.context.roomName}`, ENERGY_PROCESS, {
       roomName: this.context.roomName,
       sources,
-      controller: controller.id
+      controller: controller.id,
+      haulers: []
     } as EnergyContext);
 
     this.fork(`construction-manager_${this.context.roomName}`, CONSTRUCTION_PROCESS, {
