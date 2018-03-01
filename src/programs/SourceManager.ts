@@ -99,8 +99,7 @@ export class SourceManager extends Process {
     if (this.spotsAvailable() && this.workRate() < (SOURCE_ENERGY_CAPACITY / ENERGY_REGEN_TIME)) {
       this.log(() => `Queueing new creep`);
       const roomName = Game.getObjectById<Source>(this.context.id)!.room.name;
-      const creepName = `miner_${roomName}_${Game.time}`;
-      const creepBody = [WORK, CARRY, MOVE];
+      const creepName = `miner_${roomName}_${this.prettyName()}_${Game.time}`;
       this.sendMessage('spawn-queue', QUEUE_CREEP, {
         owner: this.name,
         name: creepName,

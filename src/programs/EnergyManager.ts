@@ -28,19 +28,20 @@ export class EnergyManager extends Process {
 
       for (const order of orders) {
         this.log(() => `Got fill container messages`);
-        const from = Game.getObjectById(order.container) as StructureContainer;
+        const to = Game.getObjectById(order.container) as StructureContainer;
 
-        const to = from.pos.findClosestByPath(FIND_STRUCTURES, {
+        const from = to.pos.findClosestByPath(FIND_STRUCTURES, {
           ignoreCreeps: true,
           maxRooms: 1,
           filter: structure => structure.structureType == STRUCTURE_CONTAINER
-          && structure.id !== from.id
+          && structure.id !== to.id
           && structure.store.energy > 0
         });
 
-        if (to) {
+        if (from) {
           this.log(() => `Found container to withdraw`);
           const creep = `hauler_${this.context.roomName}_${Game.time}`;
+          this.context.haulers = this.context.haulers || [];
           this.context.haulers.push({ creep, from: from.id, to: to.id });
           this.sendMessage('spawn-queue', QUEUE_CREEP, {
             name: creep,

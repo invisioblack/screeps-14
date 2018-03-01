@@ -22,6 +22,7 @@ global.SPAWN_NOTIFIER_PROCESS = 'spawn_notifier';
 global.TOWER_PROCESS = 'tower';
 global.UPGRADER_PROCESS = 'upgrader';
 
+global.FILL_CONTAINER = 'fill_container';
 global.QUEUE_CREEP = 'queue_creep';
 global.CREEP_SPAWNED = 'creep_spawned';
 
@@ -70,9 +71,22 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
   }
 
+  if (Memory.stats == null) {
+    Memory.stats = { tick: Game.time };
+  }
+  Memory.stats.cpu = Game.cpu;
+  Memory.stats.gcl = Game.gcl;
+
+  const memoryUsed = RawMemory.get().length;
+  Memory.stats.memory = {
+      used: memoryUsed
+  };
+
   kernel.boot();
   kernel.run();
   kernel.shutdown();
+
+  Memory.stats.cpu.used = Game.cpu.getUsed();
 
   const after = Game.cpu.getUsed();
   console.log(`[${Game.time}] TOTAL CPU: ${after - before}, BUCKET: ${Game.cpu.bucket}`);

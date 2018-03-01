@@ -27,7 +27,7 @@ export class SpawnQueue extends Process {
       const spawns = Game.rooms[creep.roomName].find(FIND_MY_SPAWNS) as StructureSpawn[];
       this.log(() => `Spawns: ${JSON.stringify(spawns, null, 2)}`);
       const spawn = spawns[0];
-      const miners = _.filter(Game.creeps, c => c.name.indexOf('harv') > -1);
+      const miners = _.filter(Game.creeps, c => c.name.indexOf('miner') > -1);
       const structures = spawn.room.find(FIND_STRUCTURES, {
         filter: structure => structure.structureType == STRUCTURE_SPAWN
         || (structure.structureType == STRUCTURE_EXTENSION && miners.length > 0)

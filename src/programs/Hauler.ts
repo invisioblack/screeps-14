@@ -62,12 +62,20 @@ export class Hauler extends Process {
         // if (targets.length > 0) {
         this.log(() => `Trying to withdrawn`);
         const result = this.creep.withdraw(from, RESOURCE_ENERGY);
+        if (result == ERR_NOT_ENOUGH_RESOURCES) {
+          this.creep.say('HAULER ☹️');
+          this.context.transporting = true;
+        } else {
+          this.creep.say('HAULER ✌️');
+        }
         this.log(() => `Result ${result}`);
         // }
       } else {
         // tslint:disable-next-line:max-line-length
         this.log(() => `Trying to move to withdrawn`);
-        this.creep.moveTo(from);
+        this.creep.moveTo(from, {
+          reusePath: 0
+        });
       }
     }
   }

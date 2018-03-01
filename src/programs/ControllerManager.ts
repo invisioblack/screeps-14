@@ -10,7 +10,6 @@ export class ControllerManager extends Process {
   run() {
     this.controller = Game.getObjectById<StructureController>(this.context.id)!;
     this.room = this.controller.room;
-    console.log(`Entrou no controller`);
 
     if (!this.controller.my) {
       this.completed = true;
@@ -41,7 +40,7 @@ export class ControllerManager extends Process {
       });
     }
 
-    if (!this.context.hauler) {
+    if (!this.context.hauler || Game.time % CREEP_LIFE_TIME == 0) {
       this.log(() => `No hauler`);
       const initialPos = this.controller.pos;
       const emptyContainer = this.controller.pos.findInRange<Structure>(FIND_STRUCTURES, 3, {

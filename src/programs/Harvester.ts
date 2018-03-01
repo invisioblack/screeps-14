@@ -31,7 +31,13 @@ export class Harvester extends Process {
       this.log(() => `Want to harvest`);
       if (position.x == this.creep.pos.x && position.y == this.creep.pos.y) {
         this.log(() => `Harvesting`);
-        this.creep.harvest(source);
+        const result = this.creep.harvest(source);
+        if (result == OK) {
+          this.creep.say(`MINER ✌️`);
+        } else {
+          this.creep.say(`MINER ☹️️`);
+          this.log(() => `MINER ${result}`);
+        }
       } else {
         this.log(() => `Trying to move`);
         this.creep.moveTo(position, { visualizePathStyle: { stroke: '#ffaa00' } });
