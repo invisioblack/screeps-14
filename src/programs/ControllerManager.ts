@@ -47,7 +47,7 @@ export class ControllerManager extends Process {
       this.sendMessage('spawn-queue', QUEUE_CREEP, {
         owner: this.name,
         name: creepName,
-        bodyParts: [WORK, CARRY, MOVE],
+        creepType: 'upgrader',
         priority: 1 + this.context.creeps.length,
         roomName: this.room.name
       });

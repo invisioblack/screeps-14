@@ -87,7 +87,6 @@ export class SourceManager extends Process {
       this.context.creeps = _.filter(this.context.creeps, creep => !!Game.creeps[creep]);
     }
 
-
     _.forEach(this.context.spots, spot => {
       if (spot.reserved !== false && !Game.creeps[spot.reserved as string]) {
         spot.reserved = false;
@@ -105,7 +104,7 @@ export class SourceManager extends Process {
       this.sendMessage('spawn-queue', QUEUE_CREEP, {
         owner: this.name,
         name: creepName,
-        bodyParts: creepBody,
+        creepType: 'miner',
         priority: this.context.creeps.length === 0 ? 0 : 1,
         roomName
       });

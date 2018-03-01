@@ -60,7 +60,7 @@ type RoomContext = BlankContext & {
 type SpawnQueueContext = BlankContext & {
   queue: {
     name: string;
-    bodyParts: BodyPartConstant[];
+    creepType: string;
     roomName: string;
     priority: number
   }[]
@@ -97,7 +97,7 @@ declare const QUEUE_CREEP = 'queue_creep';
 type QUEUE_CREEP = 'queue_creep';
 type QueueCreepMessage = EmptyMessage & {
   owner: string;
-  bodyParts: BodyPartConstant[]
+  creepType: string;
   name: string;
   roomName: string;
   priority: number;

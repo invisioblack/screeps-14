@@ -1,3 +1,4 @@
+import { CreepBuilder } from 'lib/CreepBuilder';
 import { Process } from 'os/Process';
 import { Logger } from 'utils/Logger';
 
@@ -30,12 +31,14 @@ export class SpawnQueue extends Process {
         filter: structure => structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_EXTENSION
       }) as Array<(StructureSpawn | StructureExtension)>;
       this.log(() => `Total energy: ${_.sum(structures, x => x.energy)}`);
-      const result = spawn.spawnCreep(creep.bodyParts, creep.name, { memory: { owner: creep.owner }, energyStructures: structures});
+      const maxEnergyAvailable = _.sum(structures, structure => structure.energyCapacity);
+      const bodyParts = CreepBuilder.build(creep.creepType, maxEnergyAvailable);
+      const result = spawn.spawnCreep(bodyParts, creep.name, { memory: { owner: creep.owner }, energyStructures: structures});
       if (result == ERR_NAME_EXISTS) return;
       this.log(() => `Result: ${result}}`);
       if (result == OK) {
         this.log(() => `Spawning creep '${creep.name}'`, creep.owner);
-        this.suspend = creep.bodyParts.length * CREEP_SPAWN_TIME;
+        this.suspend = bodyParts.length * CREEP_SPAWN_TIME;
         this.fork(`spawn-notifier_${creep.name}`, SPAWN_NOTIFIER_PROCESS, {
           tick: Game.time,
           spawn: spawn.name,

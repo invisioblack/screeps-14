@@ -59,7 +59,7 @@ export class ConstructionManager extends Process {
         roomName: room.name,
         owner: this.name,
         priority: 2,
-        bodyParts: [WORK, CARRY, MOVE]
+        creepType: 'builder'
       } as QueueCreepMessage);
 
       this.suspend = true;
@@ -85,7 +85,7 @@ export class ConstructionManager extends Process {
         roomName: room.name,
         owner: this.name,
         priority: 2,
-        bodyParts: [WORK, CARRY, MOVE]
+        creepType: 'repairer'
       } as QueueCreepMessage);
 
       this.suspend = true;
