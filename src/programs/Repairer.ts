@@ -41,9 +41,12 @@ export class Repairer extends Process {
         filter: structure => structure.structureType == STRUCTURE_CONTAINER
         && structure.store.energy > 0
       });
-      if (targets.length > 0 && this.creep.withdraw(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+      const source = this.creep.room.find(FIND_SOURCES)[0];
+      if (targets.length > 0 && (this.creep.withdraw(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)) {
         this.log(() => `Moving to withdraw`);
         this.creep.moveTo(targets[0]);
+      } else if (this.creep.harvest(source) == ERR_NOT_IN_RANGE) {
+        this.creep.moveTo(source, { visualizePathStyle: { stroke: 'red' } });
       }
     }
   }

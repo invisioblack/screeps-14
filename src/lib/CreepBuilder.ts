@@ -36,7 +36,7 @@ export class CreepBuilder {
     return _.sum(bodyParts, part => BODYPART_COST[part]);
   }
   static genericParts = [WORK, WORK, CARRY, MOVE];
-  static genericAdditionalParts = [WORK, MOVE];
+  static genericAdditionalParts = [WORK, CARRY, MOVE];
   static baseParts: PartList = {
     builder: CreepBuilder.genericParts,
     defender: [RANGED_ATTACK, MOVE],
@@ -49,7 +49,7 @@ export class CreepBuilder {
   static additionalParts: PartList = {
     builder: [WORK, CARRY, MOVE],
     hauler: [CARRY, MOVE],
-    miner: [WORK, MOVE],
+    miner: CreepBuilder.genericAdditionalParts,
     repairer: [WORK, CARRY, MOVE],
     upgrader: [WORK, CARRY, MOVE]
   };

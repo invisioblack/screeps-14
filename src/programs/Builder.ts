@@ -68,7 +68,7 @@ export class Builder extends Process {
       }
     } else {
       const targets = room.find(FIND_STRUCTURES, {
-        filter: structure => structure.structureType == STRUCTURE_CONTAINER
+        filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store.energy > 0
       });
       if (targets.length > 0) {
         if (creep.withdraw(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
