@@ -1,8 +1,8 @@
 import { Process } from 'os/Process';
 
 export class TowerRepairer extends Process {
-  image: ImageType = TOWER_PROCESS;
-  context!: Context[TOWER_PROCESS];
+  image: ImageType = TOWER_REPAIRER_PROCESS;
+  context!: Context[TOWER_REPAIRER_PROCESS];
 
   run() {
     this.log(() => `Running`);

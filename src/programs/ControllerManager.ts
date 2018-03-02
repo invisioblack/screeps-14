@@ -63,7 +63,7 @@ export class ControllerManager extends Process {
       // Math.min(initialPos.x + 2, 49),
       // Math.min(initialPos.y + 2, 49));
 
-    if (!this.context.creeps || this.context.creeps.length < 4) {
+    if (!this.context.creeps || this.context.creeps.length < 3) {
       this.log(() => `Queueing new creep`);
 
       const creepName = `upgrader_${this.room.name}_${Game.time}`;

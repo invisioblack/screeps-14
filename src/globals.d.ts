@@ -72,12 +72,14 @@ type Context = {
   hauler: HaulerContext
   harvester: HarvesterContext
   init: InitContext
+  miner: MinerContext
   repairer: RepairerContext
   room: RoomContext
   source: SourceContext
   spawn_queue: SpawnQueueContext
   spawn_notifier: SpawnNotifierContext
   tower: TowerDefenseContext
+  tower_repairer: TowerRepairerContext
   upgrader: UpgraderContext
 };
 

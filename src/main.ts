@@ -14,6 +14,7 @@ global.ENERGY_PROCESS = 'energy';
 global.HAULER_PROCESS = 'hauler';
 global.HARVESTER_PROCESS = 'harvester';
 global.INIT_PROCESS = 'init';
+global.MINER_PROCESS = 'miner';
 global.NOOP_PROCESS = 'init';
 global.REPAIRER_PROCESS = 'repairer';
 global.ROOM_PROCESS = 'room';

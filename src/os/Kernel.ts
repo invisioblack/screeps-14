@@ -1,22 +1,23 @@
 import { MessageBus } from 'ipc/MessageBus';
 import { Process, SerializedProcess } from 'os/Process';
 import { Scheduler } from 'os/Scheduler';
+import { Builder } from 'programs/Builder';
+import { ConstructionManager } from 'programs/ConstructionManager';
 import { ControllerManager } from 'programs/ControllerManager';
 import { EnergyManager } from 'programs/EnergyManager';
 import { Harvester } from 'programs/Harvester';
 import { Hauler } from 'programs/Hauler';
+import { MinerProcess } from 'programs/Miner';
 import { Repairer } from 'programs/Repairer';
 import { RoomManager } from 'programs/RoomManager';
 import { SourceManager } from 'programs/SourceManager';
+import { SpawnNotifier } from 'programs/SpawnNotifier';
 import { SpawnQueue } from 'programs/SpawnQueue';
+import { TowerDefense } from 'programs/TowerDefense';
+import { TowerRepairer } from 'programs/TowerRepairer';
 import { Upgrader } from 'programs/Upgrader';
 import { InitProcess } from 'system/Init';
 import { Logger } from 'utils/Logger';
-import { Builder } from '../programs/Builder';
-import { ConstructionManager } from '../programs/ConstructionManager';
-import { SpawnNotifier } from '../programs/SpawnNotifier';
-import { TowerDefense } from '../programs/TowerDefense';
-import { TowerRepairer } from '../programs/TowerRepairer';
 
 export const images: {[type: string]: any} = {
   builder: Builder,
@@ -26,6 +27,7 @@ export const images: {[type: string]: any} = {
   hauler: Hauler,
   harvester: Harvester,
   init: InitProcess,
+  miner: MinerProcess,
   repairer: Repairer,
   room: RoomManager,
   source: SourceManager,
