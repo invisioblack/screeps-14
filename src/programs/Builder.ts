@@ -50,8 +50,6 @@ export class Builder extends Process {
     // tslint:disable-next-line:max-line-length
     this.log(() => `Target: ${target.structureType}, ${target.progress} / ${target.progressTotal} = ${Math.floor(target.progress * 100 / target.progressTotal)}%`);
 
-    const source = room.find(FIND_SOURCES)[0];
-
     if (this.context.building && creep.carry.energy === 0) {
       this.context.building = false;
       creep.say('🔄 harvest');
@@ -74,8 +72,14 @@ export class Builder extends Process {
         if (creep.withdraw(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
           creep.moveTo(targets[0], { visualizePathStyle: { stroke: 'red' } });
         }
-      } else if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(source, { visualizePathStyle: { stroke: 'red' } });
+      } else {
+        const source = creep.pos.findClosestByRange(FIND_SOURCES, {
+          filter: structure => structure.energy > 0
+        });
+
+        if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(source, { visualizePathStyle: { stroke: 'red' } });
+        }
       }
     }
   }

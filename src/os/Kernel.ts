@@ -16,6 +16,7 @@ import { Builder } from '../programs/Builder';
 import { ConstructionManager } from '../programs/ConstructionManager';
 import { SpawnNotifier } from '../programs/SpawnNotifier';
 import { TowerDefense } from '../programs/TowerDefense';
+import { TowerRepairer } from '../programs/TowerRepairer';
 
 export const images: {[type: string]: any} = {
   builder: Builder,
@@ -31,6 +32,7 @@ export const images: {[type: string]: any} = {
   spawn_notifier: SpawnNotifier,
   spawn_queue: SpawnQueue,
   tower: TowerDefense,
+  tower_repairer: TowerRepairer,
   upgrader: Upgrader
 };
 export class Kernel {

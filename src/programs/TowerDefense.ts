@@ -15,9 +15,14 @@ export class TowerDefense extends Process {
         filter: structure => structure.structureType == STRUCTURE_TOWER && structure.energy > TOWER_ENERGY_COST
       }) as StructureTower[];
 
-      _.forEach(towers, tower => {
-        tower.attack(hostiles[0]);
-      });
+      for (const tower of towers) {
+        onHostile: for (const hostile of hostiles) {
+          if (tower.pos.inRangeTo(hostile.pos.x, hostile.pos.y, TOWER_OPTIMAL_RANGE)) {
+            tower.attack(hostile);
+            break onHostile;
+          }
+        }
+      }
     }
   }
 

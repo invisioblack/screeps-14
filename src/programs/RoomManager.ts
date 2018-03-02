@@ -40,6 +40,10 @@ export class RoomManager extends Process {
       roomName: this.context.roomName
     });
 
+    this.fork(`tower-repairer_${this.context.roomName}`, TOWER_REPAIRER_PROCESS, {
+      roomName: this.context.roomName
+    });
+
     this.log(() => `Creeps alive: ${JSON.stringify(_.map(Game.creeps, creep => creep.name), null, 2)}`);
 
     this.suspend = 10;

@@ -21,6 +21,7 @@ global.SOURCE_PROCESS = 'source';
 global.SPAWN_QUEUE_PROCESS = 'spawn_queue';
 global.SPAWN_NOTIFIER_PROCESS = 'spawn_notifier';
 global.TOWER_PROCESS = 'tower';
+global.TOWER_REPAIRER_PROCESS = 'tower_repairer';
 global.UPGRADER_PROCESS = 'upgrader';
 
 global.FILL_CONTAINER = 'fill_container';
