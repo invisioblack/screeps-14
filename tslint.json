@@ -23,6 +23,8 @@
     "object-literal-sort-keys": false,
     "triple-equals": false,
     "interface-over-type-literal": false,
-    "max-line-length": [true, 140]
+    "max-line-length": [true, 140],
+    "no-empty": false,
+    "comment-format": false
   }
 }

@@ -34,26 +34,33 @@ export class SpawnQueue extends Process {
       }) as Array<(StructureSpawn | StructureExtension)>;
 
       this.log(() => `Total energy: ${_.sum(structures, x => x.energy)}`);
-      // const maxEnergyAvailable = _.sum(structures, structure => structure.energyCapacity);
       const currentEnergyAvailable = _.sum(structures, x => x.energy);
       const bodyParts = miners.length == 0 ? [WORK, CARRY, MOVE] : CreepBuilder.build(creep.creepType, currentEnergyAvailable);
-      const result = spawn.spawnCreep(bodyParts, creep.name, { memory: { owner: creep.owner }, energyStructures: structures});
+      const result = spawn.spawnCreep(bodyParts, creep.creepName, { memory: { owner: creep.owner }, energyStructures: structures});
       if (result == ERR_NAME_EXISTS) return;
       this.log(() => `Result: ${result}}`);
       if (result == OK) {
-        this.log(() => `Spawning creep '${creep.name}'`, creep.owner);
+        this.log(() => `Spawning creep '${creep.creepName}'`, creep.owner);
         this.suspend = bodyParts.length * CREEP_SPAWN_TIME;
-        this.fork(`spawn-notifier_${creep.name}`, SPAWN_NOTIFIER_PROCESS, {
-          tick: Game.time,
+        this.fork(`spawn-notifier_${creep.creepName}`, SPAWN_NOTIFIER_PROCESS, {
           spawn: spawn.name,
-          creep: creep.name,
+          creep: creep.creepName,
+          creepType: creep.creepType,
           process: creep.owner
         }, 1);
       } else {
-        this.log(() => `Can't spawn creep '${creep.name}'`, creep.owner);
+        this.log(() => `Can't spawn creep '${creep.creepName}'`, creep.owner);
         this.context.queue.unshift(creep);
         this.suspend = 3;
       }
     }
   }
 }
+
+declare var global: any;
+
+global.queue = {};
+global.queue.list = () => {
+  // tslint:disable-next-line:max-line-length
+  return global.obj((_.filter(Memory.processTable, (process: SerializedProcess) => process.image == SPAWN_QUEUE_PROCESS)[0].context as SpawnQueueContext).queue);
+};

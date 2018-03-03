@@ -25,15 +25,15 @@ export class ConstructionManager extends Process {
       const filtered = _.filter(messages, message => message.type == CREEP_SPAWNED)
         .map(entry => entry.message as CreepSpawnedMessage)
         .forEach(message => {
-          if (message.creep.indexOf('repair') >= 0) {
+          if (message.creepName.indexOf('repair') >= 0) {
             this.log(() => `Got new repairer message`);
-            this.fork(message.creep + '-repair', REPAIRER_PROCESS, { creep: message.creep, repairing: false });
-            this.context.repairer = message.creep;
+            this.fork(message.creepName + '-repair', REPAIRER_PROCESS, { creep: message.creepName, repairing: false });
+            this.context.repairer = message.creepName;
           } else {
             this.log(() => `Got new builder message`);
-            this.context.creeps.push(message.creep);
+            this.context.creeps.push(message.creepName);
             // tslint:disable-next-line:max-line-length
-            this.fork(message.creep + '-build', BUILDER_PROCESS, { creep: message.creep, roomName: room.name, sites: [], manual: true, building: false });
+            this.fork(message.creepName + '-build', BUILDER_PROCESS, { creep: message.creepName, roomName: room.name, sites: [], manual: true, building: false });
           }
       });
     }
@@ -56,7 +56,7 @@ export class ConstructionManager extends Process {
       const creepName = `builder_${room.name}_${Game.time}`;
       this.log(() => `Queueing new creep '${creepName}`);
       this.sendMessage('spawn-queue', QUEUE_CREEP, {
-        name: creepName,
+        creepName,
         roomName: room.name,
         owner: this.name,
         priority: 2,
@@ -82,7 +82,7 @@ export class ConstructionManager extends Process {
       const creepName = `repairer_${room.name}_${Game.time}`;
       this.log(() => `Queueing new creep '${creepName}`);
       this.sendMessage('spawn-queue', QUEUE_CREEP, {
-        name: creepName,
+        creepName,
         roomName: room.name,
         owner: this.name,
         priority: 2,

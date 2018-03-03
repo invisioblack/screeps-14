@@ -23,10 +23,10 @@ export class SourceManager extends Process {
         .map(entry => entry.message as CreepSpawnedMessage)
         .forEach(message => {
           this.log(() => `Got message`);
-          if (message.creep.indexOf('hauler') >= 0) {
+          if (message.creepName.indexOf('hauler') >= 0) {
             this.log(() => `Spots ${JSON.stringify(this.context.spots, null, 2)}`);
-            this.log(() => `Creep ${message.creep}`);
-            const haulerSpot = _.filter(this.context.spots, s => s.hauler == message.creep)[0];
+            this.log(() => `Creep ${message.creepName}`);
+            const haulerSpot = _.filter(this.context.spots, s => s.hauler == message.creepName)[0];
             // tslint:disable-next-line:max-line-length
             if (!haulerSpot) return;
             // tslint:disable-next-line:max-line-length
@@ -36,18 +36,18 @@ export class SourceManager extends Process {
             const containersWithEnergy = this.source.room.find(FIND_STRUCTURES, {
               filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store.energy < structure.storeCapacity
             });
-            this.fork(message.creep + '-hauler', HAULER_PROCESS, {
-              creep: message.creep,
+            this.fork(message.creepName + '-hauler', HAULER_PROCESS, {
+              creep: message.creepName,
               transporting: false,
               from: from.id,
               to: containersWithEnergy[0].id
             });
           } else {
-            this.context.creeps.push(message.creep);
+            this.context.creeps.push(message.creepName);
             let spot: MiningSpot = this.context.spots[0];
             for (spot of this.context.spots) {
               if (spot.reserved !== false) continue;
-              spot.reserved = message.creep;
+              spot.reserved = message.creepName;
               if (!spot.container) {
                 if (_.filter(this.source.room.lookForAt(LOOK_STRUCTURES, spot.x, spot.y), structure => {
                   return structure.structureType == STRUCTURE_CONTAINER;
@@ -71,7 +71,7 @@ export class SourceManager extends Process {
               break;
             }
             // tslint:disable-next-line:max-line-length
-            this.fork(message.creep + '-harvest', HARVESTER_PROCESS, { creep: message.creep, source: this.context.id, spot, harvesting: false });
+            // this.fork(message.creep + '-harvest', HARVESTER_PROCESS, { creep: message.creep, sourceId: this.context.id, spot, harvesting: false });
           }
 
           _.forEach(this.context.spots, spot => {
@@ -101,8 +101,8 @@ export class SourceManager extends Process {
       const roomName = Game.getObjectById<Source>(this.context.id)!.room.name;
       const creepName = `miner_${roomName}_${this.prettyName()}_${Game.time}`;
       this.sendMessage('spawn-queue', QUEUE_CREEP, {
+        creepName,
         owner: this.name,
-        name: creepName,
         creepType: 'miner',
         priority: this.context.creeps.length === 0 ? 0 : 1,
         roomName

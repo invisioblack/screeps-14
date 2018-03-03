@@ -19,8 +19,15 @@ export class Process {
     console.log(`Run method not implemented for process [${this.name}]`);
   }
 
-  fork<T extends ImageType>(name: string, image: T, context?: Context[T], delay?: number) {
-    this.kernel.launchProcess(name, image, context, delay);
+  fork<T extends ImageType>(name: string, image: T, context: Context[T], delay?: number) {
+    this.kernel.launchProcess(name, image, context, this.name, delay);
+  }
+
+  killChildren(): void {
+    for (const child of this.kernel.getChildren(this.name)) {
+      child.completed = true;
+      child.killChildren();
+    }
   }
 
   sendMessage<T extends MessageType>(process: string, type: T, message: Message[T], interrupt: boolean = false) {
@@ -46,10 +53,12 @@ export class Process {
   }
 }
 
-export interface SerializedProcess {
-  name: string;
-  image: string;
-  context: any;
-  parent: string;
-  suspend: number | boolean;
+declare global {
+  interface SerializedProcess {
+    name: string;
+    image: string;
+    context: any;
+    parent: string;
+    suspend: number | boolean;
+  }
 }

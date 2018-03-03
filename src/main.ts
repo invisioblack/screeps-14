@@ -1,10 +1,9 @@
 import { Kernel } from 'os/Kernel';
 import { Scheduler } from 'os/Scheduler';
+import { Stats } from 'system/Stats';
 import { ErrorMapper } from 'utils/ErrorMapper';
 import { Logger } from 'utils/Logger';
 import { MessageBus } from './ipc/MessageBus';
-import { SerializedProcess } from './os/Process';
-import { Stats } from 'system/Stats';
 
 declare var global: any;
 global.BUILDER_PROCESS = 'builder';
@@ -34,11 +33,6 @@ global.obj = (obj: any) => {
   return JSON.stringify(obj, null, 2);
 };
 
-global.queue = () => {
-  // tslint:disable-next-line:max-line-length
-  return global.obj((_.filter(Memory.processTable, (process: SerializedProcess) => process.image == SPAWN_QUEUE_PROCESS)[0].context as SpawnQueueContext).queue);
-};
-
 global.creeps = () => {
   return global
     .obj(_.map(Game.creeps, creep => ({ name: creep.name, energy: creep.carry.energy + '/' + creep.carryCapacity })));
@@ -63,8 +57,7 @@ const kernel = new Kernel(scheduler, bus, logger);
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
-  console.log('-----------------------------------------------------------------------------------------');
-  console.log(`Current game tick is ${Game.time}`);
+  console.log(`[${Game.time}]  -----------------------------------------------------------------------`);
 
   // Automatically delete memory of missing creeps
   for (const name in Memory.creeps) {

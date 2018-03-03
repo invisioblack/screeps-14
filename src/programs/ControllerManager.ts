@@ -25,9 +25,9 @@ export class ControllerManager extends Process {
         .map(entry => entry.message as CreepSpawnedMessage)
         .forEach(message => {
           this.log(() => `Got message`);
-          this.context.creeps.push(message.creep);
-          this.fork(message.creep + '-upgrade', UPGRADER_PROCESS, {
-            creep: message.creep,
+          this.context.creeps.push(message.creepName);
+          this.fork(message.creepName + '-upgrade', UPGRADER_PROCESS, {
+            creep: message.creepName,
             controller: this.context.id,
             upgrading: false });
         });
@@ -68,8 +68,8 @@ export class ControllerManager extends Process {
 
       const creepName = `upgrader_${this.room.name}_${Game.time}`;
       this.sendMessage('spawn-queue', QUEUE_CREEP, {
+        creepName,
         owner: this.name,
-        name: creepName,
         creepType: 'upgrader',
         priority: 1 + this.context.creeps.length,
         roomName: this.room.name

@@ -9,7 +9,6 @@ export class Scheduler {
   }
 
   enqueueProcess(process: Process) {
-    // Logger.Log(`Enqueuing process`, 'scheduler', process.name);
     this.processQueue.push(process);
   }
 
@@ -19,7 +18,6 @@ export class Scheduler {
 
   getNextProcess(): Process {
     const process =  this.processQueue.pop() as Process;
-    // Logger.Log(`Getting next process to run`, 'scheduler', process.name);
     return process;
   }
 }

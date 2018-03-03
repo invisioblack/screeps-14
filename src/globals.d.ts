@@ -1,7 +1,6 @@
 declare const CONTROLLER_PROCESS = 'controller';
 declare const ENERGY_PROCESS = 'energy';
 declare const HARVESTER_PROCESS = 'harvester';
-declare const INIT_PROCESS = 'init';
 declare const NOOP_PROCESS = 'noop';
 declare const ROOM_PROCESS = 'room';
 declare const SOURCE_PROCESS = 'source';
@@ -10,7 +9,6 @@ declare const UPGRADER_PROCESS = 'upgrader';
 type CONTROLLER_PROCESS = 'controller';
 type ENERGY_PROCESS = 'energy';
 type HARVESTER_PROCESS = 'harvester';
-type INIT_PROCESS = 'init';
 type NOOP_PROCESS = 'noop';
 type ROOM_PROCESS = 'room';
 type SOURCE_PROCESS = 'source';
@@ -49,16 +47,12 @@ type CreepContext = BlankContext & {
   creep: string;
 }
 
-type InitContext = BlankContext & {
-  created_at: number;
-};
 type RoomContext = BlankContext & {
   roomName: string;
 };
 
 type SpawnQueueContext = BlankContext & {
   queue: {
-    name: string;
     creepType: string;
     roomName: string;
     priority: number
@@ -88,19 +82,21 @@ type Context = {
 
 type EmptyMessage = {};
 type CreepMessage = {
-  creep: string;
+  creepName: string;
 };
 
 declare const CREEP_SPAWNED = 'creep_spawned';
 type CREEP_SPAWNED = 'creep_spawned';
-type CreepSpawnedMessage = CreepMessage;
+type CreepSpawnedMessage = CreepMessage & {
+  creepType: string;
+};
 
 declare const QUEUE_CREEP = 'queue_creep';
 type QUEUE_CREEP = 'queue_creep';
 type QueueCreepMessage = EmptyMessage & {
   owner: string;
+  creepName: string;
   creepType: string;
-  name: string;
   roomName: string;
   priority: number;
 };

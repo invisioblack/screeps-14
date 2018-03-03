@@ -9,42 +9,43 @@ export class RoomManager extends Process {
 
     this.log(() => `Running`);
 
-    if (!Game.rooms[this.context.roomName]
-      || !Game.rooms[this.context.roomName].controller
-      || !Game.rooms[this.context.roomName].controller!.my) {
+    const room = Game.rooms[this.context.roomName];
+    if (!room || !room.controller || !room.controller.my) {
       this.completed = true;
       return;
     }
 
-    const sources = _
-      .map(Game.rooms[this.context.roomName]
-        .find(FIND_SOURCES_ACTIVE), x => {
-          return { id: x.id, enabled: false } as SourceStatusContext;
-        });
-
-    const controller = Game.rooms[this.context.roomName].controller as StructureController;
-
     this.fork(`energy-manager_${this.context.roomName}`, ENERGY_PROCESS, {
-      roomName: this.context.roomName,
-      sources,
-      controller: controller.id,
-      haulers: []
+      roomName: this.context.roomName
     } as EnergyContext);
 
-    this.fork(`construction-manager_${this.context.roomName}`, CONSTRUCTION_PROCESS, {
-      room: this.context.roomName,
-      creeps: []
-    });
+    // const sources = _
+    //   .map(Game.rooms[this.context.roomName]
+    //     .find(FIND_SOURCES_ACTIVE), x => {
+    //       return { id: x.id, enabled: false } as SourceStatusContext;
+    //     });
 
-    this.fork(`tower-defense_${this.context.roomName}`, TOWER_PROCESS, {
-      roomName: this.context.roomName
-    });
+    // const controller = Game.rooms[this.context.roomName].controller as StructureController;
 
-    this.fork(`tower-repairer_${this.context.roomName}`, TOWER_REPAIRER_PROCESS, {
-      roomName: this.context.roomName
-    });
+    // this.fork(`energy-manager_${this.context.roomName}`, ENERGY_PROCESS, {
+    //   roomName: this.context.roomName,
+    //   sources,
+    //   controller: controller.id,
+    //   haulers: []
+    // } as EnergyContext);
 
-    this.log(() => `Creeps alive: ${JSON.stringify(_.map(Game.creeps, creep => creep.name), null, 2)}`);
+    // this.fork(`construction-manager_${this.context.roomName}`, CONSTRUCTION_PROCESS, {
+    //   room: this.context.roomName,
+    //   creeps: []
+    // });
+
+    // this.fork(`tower-defense_${this.context.roomName}`, TOWER_PROCESS, {
+    //   roomName: this.context.roomName
+    // });
+
+    // this.fork(`tower-repairer_${this.context.roomName}`, TOWER_REPAIRER_PROCESS, {
+    //   roomName: this.context.roomName
+    // });
 
     this.suspend = 10;
   }

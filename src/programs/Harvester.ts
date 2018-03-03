@@ -1,3 +1,4 @@
+import { MessageUtil } from 'lib/MessageUtil';
 import { Process } from 'os/Process';
 import { Logger } from 'utils/Logger';
 import { EnergyManager } from './EnergyManager';
@@ -8,9 +9,7 @@ export class Harvester extends Process {
   creep!: Creep;
 
   run() {
-    // Logger.debug(`HARVESTER[${this.context.creep}] Running.`);
-
-    this.creep = Game.creeps[this.context.creep];
+    this.creep = Game.creeps[this.context.creepName];
     if (!this.creep) {
       this.completed = true;
       return;
@@ -18,29 +17,21 @@ export class Harvester extends Process {
 
     if (this.context.harvesting && this.creep.carry.energy === this.creep.carryCapacity) {
       this.context.harvesting = false;
-      this.creep.say('🔄 transfering');
     } else if (!this.context.harvesting && this.creep.carry.energy === 0) {
       this.context.harvesting = true;
-      this.creep.say('🔄 harvest');
     }
 
-    const source = Game.getObjectById(this.context.source) as Source;
-    const position = new RoomPosition(this.context.spot.x, this.context.spot.y, this.context.spot.room);
+    const source = Game.getObjectById(this.context.spot.sourceId) as Source;
+    const position = new RoomPosition(this.context.spot.pos.x, this.context.spot.pos.y, this.context.spot.pos.roomName);
 
     if (this.context.harvesting) {
       this.log(() => `Want to harvest`);
-      if (position.x == this.creep.pos.x && position.y == this.creep.pos.y) {
-        this.log(() => `Harvesting`);
+      if (this.creep.pos.isEqualTo(position)) {
         const result = this.creep.harvest(source);
-        if (result == OK) {
-          this.creep.say(`MINER ✌️`);
-        } else {
-          this.creep.say(`MINER ☹️️`);
-          this.log(() => `MINER ${result}`);
-        }
+        this.log(() => `Harvesting: ${MessageUtil.getMessage(result)} `);
       } else {
-        this.log(() => `Trying to move`);
-        this.creep.moveTo(position, { visualizePathStyle: { stroke: '#ffaa00' } });
+        const result = this.creep.moveTo(position, { visualizePathStyle: { stroke: 'gold' } });
+        this.log(() => `Moving: ${MessageUtil.getMessage(result)}`);
       }
     } else {
       this.log(() => `Want to transfer`);
@@ -58,14 +49,12 @@ export class Harvester extends Process {
         });
       }
 
-      // this.log(() => `${JSON.stringify(targets, null, 2)}`);
-
-      if (targets.length > 0) {
-        const msg = this.creep.transfer(targets[0], RESOURCE_ENERGY);
-        this.log(() => `Code: ${msg}`);
-        if (msg == ERR_NOT_IN_RANGE) {
-          this.creep.moveTo(targets[0], { ignoreCreeps: true, visualizePathStyle: { stroke: '#ffffff' } });
-        }
+      if (targets.length > 0 && this.creep.pos.isNearTo(targets[0])) {
+        const result = this.creep.transfer(targets[0], RESOURCE_ENERGY);
+        this.log(() => `Transfering: ${MessageUtil.getMessage(result)}`);
+      } else {
+        const result = this.creep.moveTo(targets[0], { ignoreCreeps: true, visualizePathStyle: { stroke: 'yellow' } });
+        this.log(() => `Moving: ${MessageUtil.getMessage(result)}`);
       }
     }
   }
@@ -76,9 +65,9 @@ export class Harvester extends Process {
 }
 
 declare global {
-  type HarvesterContext = CreepContext & {
-    source: string;
-    spot: MiningSpot;
+  type HarvesterContext = {
+    creepName: string;
+    spot: SourceSpotContext;
     harvesting: boolean;
   };
 }

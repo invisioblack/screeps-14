@@ -1,5 +1,5 @@
 import { MessageBus } from 'ipc/MessageBus';
-import { Process, SerializedProcess } from 'os/Process';
+import { Process } from 'os/Process';
 import { Scheduler } from 'os/Scheduler';
 import { Builder } from 'programs/Builder';
 import { ConstructionManager } from 'programs/ConstructionManager';
@@ -72,12 +72,18 @@ export class Kernel {
 
     while (this.scheduler.hasProcessToRun() && this.hasEnoughCpu()) {
       const process = this.scheduler.getNextProcess();
-      if (process.suspend !== false) {
+      if (process.suspend !== false || process.completed) {
         this.logKernel(() => `Skipping process`, process.name);
         continue;
       }
       this.logKernel(() => `Running process`, process.name);
-      process.run();
+      try {
+        process.run();
+      } catch (e) {
+        console.log(e);
+        throw e;
+      }
+      if (process.completed) process.killChildren();
     }
 
   }
@@ -86,11 +92,11 @@ export class Kernel {
     return Game.cpu.getUsed() <= this.cpuLimit;
   }
 
-  launchProcess<T extends ImageType>(name: string, image: T, context?: Context[T], delay?: number, parent?: string) {
+  launchProcess<T extends ImageType>(name: string, image: T, context?: Context[T], parent?: string, delay: number = 0) {
     if (this.processTable[name]) return;
     const process = new images[image](this, { name, context });
     this.logKernel(() => `Launched new process`, name);
-    if (delay) {
+    if (delay > 0) {
       this.logKernel(() => `Delaying process for ${delay} tick(s)`, name);
       process.suspend = delay;
     }
@@ -99,7 +105,7 @@ export class Kernel {
   }
 
   getChildren(parent: string): Process[] {
-    return _.filter(this.processTable, process => process.name == parent);
+    return _.filter(this.processTable, process => process.parent == parent);
   }
 
   storeProcessTable() {

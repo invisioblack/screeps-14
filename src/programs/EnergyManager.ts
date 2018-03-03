@@ -1,130 +1,222 @@
 import { Process } from 'os/Process';
 
+// tslint:disable:max-classes-per-file
+export class PositionUtil {
+  static getNearbySpots(pos: RoomPosition): RoomPosition[] {
+    const room = Game.rooms[pos.roomName];
+    const abs = (coord: number) => coord > 49 ? 49 : (coord < 0 ? 0 : coord);
+    const [top, left, bottom, right] = [abs(pos.y - 1), abs(pos.x - 1), abs(pos.y + 1), abs(pos.x + 1)];
+    const terrains = room.lookForAtArea(LOOK_TERRAIN, top, left, bottom, right, true);
+    return _
+      .chain(terrains)
+      .filter(t => t.terrain !== 'wall')
+      .map(p => new RoomPosition(p.x, p.y, room.name))
+      .value();
+  }
+
+  static getDistance(a: RoomPosition, b: RoomPosition): number {
+    return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+  }
+
+  static prettyName(pos: RoomPosition): string {
+    return `x${pos.x}_y${pos.y}`;
+  }
+}
+
 export class EnergyManager extends Process {
   image: ImageType = ENERGY_PROCESS;
   context!: Context[ENERGY_PROCESS];
+  room!: Room;
 
   run() {
-    this.log(() => `Running`, this.context.roomName);
-    if (this.context.roomName == 'W59N21') {
-      this.completed = true;
-      return;
-    }
-    if (!Game.rooms[this.context.roomName]
-      || !Game.rooms[this.context.roomName].controller
-      || !Game.rooms[this.context.roomName].controller!.my) {
-      this.completed = true;
-      return;
-    }
+    this.log(() => `Running`);
+    this.room = Game.rooms[this.context.roomName];
+
+    if (!this.context.spots) this.discoverSpots();
+    if (!this.context.creeps) this.context.creeps = [];
+    this.drawMiningSpots();
+
     const messages = this.receiveMessages();
+    if (messages.length > 0) this.handleMessages(messages);
 
-    if (messages.length > 0) {
-      this.log(() => `Got messages`);
-      const orders = _
-        .chain(messages)
-        .filter(message => message.type === FILL_CONTAINER)
-        .map(message => message.message as FillContainerMessage)
-        .value();
+    this.handleMissingCreeps();
 
-      for (const order of orders) {
-        this.log(() => `Got fill container messages`);
-        const to = Game.getObjectById(order.container) as StructureContainer;
+    const desiredWorkRate = 2;
 
-        const from = to.pos.findClosestByPath(FIND_STRUCTURES, {
-          ignoreCreeps: true,
-          maxRooms: 1,
-          filter: structure => structure.structureType == STRUCTURE_CONTAINER
-          && structure.id !== to.id
-          && structure.store.energy > 0
-        });
+    this.log(() => `Spawning? ${this.spawning()}`);
+    if (this.spawning()) return;
 
-        if (from) {
-          this.log(() => `Found container to withdraw`);
-          const creep = `hauler_${this.context.roomName}_${Game.time}`;
-          this.context.haulers = this.context.haulers || [];
-          this.context.haulers.push({ creep, from: from.id, to: to.id });
-          this.sendMessage('spawn-queue', QUEUE_CREEP, {
-            name: creep,
-            roomName: this.context.roomName,
-            owner: this.name,
-            priority: 2,
-            creepType: 'hauler'
-          });
-        }
-      }
-
-      const spawns = _
-        .chain(messages)
-        .filter(message => message.type === CREEP_SPAWNED)
-        .map(message => message.message as CreepSpawnedMessage)
-        .value();
-
-      for (const spawn of spawns) {
-        this.log(() => `Got creep sapwned messages`);
-
-        const hauler = _.filter(this.context.haulers, h => h.creep === spawn.creep)[0];
-        this.fork(spawn.creep, HAULER_PROCESS, {
-          creep: hauler.creep,
-          from: hauler.from,
-          to: hauler.to,
-          transporting: false
-        });
-      }
+    this.log(() => `There are free spots? ${this.areThereFreeSpots()}`);
+    this.log(() => `Current workRate: ${this.currentWorkRate()}`);
+    if (this.currentWorkRate() < desiredWorkRate && this.areThereFreeSpots()) {
+      this.enqueueNewHarvester();
     }
-    _
-    .filter(this.context.sources, sourcectx => !sourcectx.enabled)
-    .forEach(sourcectx => {
-      sourcectx.enabled = true;
-      const sourceName = `source_${this.context.roomName}_${EnergyManager.prettyName(sourcectx.id)}`;
-      const source = Game.getObjectById<Source>(sourcectx.id)!;
-      const spots = EnergyManager.getPositionsAround(source.room.name, source.pos);
 
-      this.fork(sourceName, SOURCE_PROCESS, { id: source.id, creeps: [], spots });
+    if (this.context.creeps.length > 0 && !_.any(this.context.creeps, c => c.creepType === 'upgrader')){
+      // this.enqueueNewUpgrader();
+    }
+
+    // this.suspend = 10;
+  }
+
+  private handleMissingCreeps(): void {
+    _.forEach(this.context.spots!, spot => {
+      if (typeof spot.reserved === 'string' && !Game.creeps[spot.reserved]) spot.reserved = false;
     });
-
-    this.log(() => `Room: ${this.context.roomName}`);
-    const controllerName = `controller_${this.context.roomName}`;
-    this.fork(controllerName, CONTROLLER_PROCESS, { id: this.context.controller, creeps: [] });
-
-    this.suspend = 10;
   }
 
-  private static prettyName(id: string) {
-    const source = Game.getObjectById(id) as Source;
-    return `x${source.pos.x}_y${source.pos.y}`;
+  private drawMiningSpots() {
+    _.forEach(this.context.spots!, (spot, i) => {
+        this.room.visual.circle(spot.pos.x, spot.pos.y, { fill: 'gold' });
+        this.room.visual.text(`${spot.reserved ? '✔︎' : '✖︎'}`, spot.pos.x, spot.pos.y, { font: 0.4, align: 'left'});
+    });
   }
 
-  private static getPositionsAround(room: string, pos: RoomPosition): MiningSpot[] {
-    const positions = [];
-    for (let x = pos.x - 1; x <= pos.x + 1; x++) {
-      for (let y = pos.y - 1; y <= pos.y + 1; y++) {
-        if (x == pos.x && y == pos.y) continue;
-        if (Game.rooms[room].lookForAt(LOOK_TERRAIN, new RoomPosition(x, y, room))[0] == 'plain') {
-          positions.push({ x, y, room, reserved: false, container: false });
-        }
+  private discoverSpots() {
+    const spawn = this.room.find(FIND_MY_STRUCTURES, { filter: s => s.structureType === STRUCTURE_SPAWN})[0];
+
+    this.context.spots = _
+      .chain(this.room.find(FIND_SOURCES))
+      .map<SourcePosition>(source => ({ id: source.id, pos: source.pos }))
+      .map<SourceNearbyPositions>(source => ({ id: source.id, positions: PositionUtil.getNearbySpots(source.pos)}))
+      .map<SourceNearbyPosition[]>(source => _.map(source.positions, pos => ({ id: source.id, pos})))
+      .flatten<SourceNearbyPosition>()
+      .sortBy(source => PositionUtil.getDistance(spawn.pos, source.pos))
+      .map<SourceSpotContext>(source => ({ sourceId: source.id, pos: source.pos, reserved: false }))
+      .value();
+  }
+
+  private handleMessages(messages: MessageEntry[]): void {
+    this.log(() => `Received messages`);
+    const creeps = _
+    .chain(messages)
+    .filter(message => message.type === CREEP_SPAWNED)
+    .map(message => message.message as CreepSpawnedMessage)
+    .value();
+
+    this.log(() => `Message count: ${creeps.length}`);
+
+    for (const creep of creeps) {
+      switch (creep.creepType) {
+        case 'harvester': this.handleNewHarvester(creep); break;
+        case 'upgrader': this.handleNewUpgrader(creep); break;
       }
     }
-    return positions;
   }
 
-  private static print(obj: any) {
+  private currentWorkRate(): number {
+    const workRate = _
+      .chain(this.context.creeps!)
+      .filter(creep => creep.creepType === 'harvester')
+      .sum(creep => Game.creeps[creep.creepName] ? Game.creeps[creep.creepName].getActiveBodyparts(WORK) : 0)
+      .value();
+
+    return HARVEST_POWER * workRate;
+  }
+
+  private spawning(): boolean {
+    return _.any(this.context.creeps!, creep => creep.spawning);
+  }
+
+  private enqueueNewUpgrader() {
+    const freeSpot = this.getFreeSpot();
+    freeSpot.reserved = true;
+
+    const creepType = 'upgrader';
+    const creepName = `${creepType}_${Game.time}`;
+
+    this.sendMessage('spawn-queue', QUEUE_CREEP, {
+      owner: this.name,
+      roomName: this.context.roomName,
+      creepName,
+      creepType,
+      priority: 2
+    } as QueueCreepMessage);
+
+    this.context.creeps!.push({ creepName, creepType, spawning: true });
+  }
+
+  private enqueueNewHarvester() {
+    const freeSpot = this.getFreeSpot();
+    freeSpot.reserved = true;
+
+    const creepType = 'harvester';
+    const creepName = `${creepType}_${Game.time}`;
+
+    this.sendMessage('spawn-queue', QUEUE_CREEP, {
+      owner: this.name,
+      roomName: this.context.roomName,
+      creepName,
+      creepType,
+      priority: 1
+    } as QueueCreepMessage);
+
+    this.context.creeps!.push({ creepName, creepType, spawning: true });
+  }
+
+  private handleNewUpgrader(creep: CreepSpawnedMessage): void {
+  }
+
+  private handleNewHarvester(message: CreepSpawnedMessage): void {
+    const { creepName, creepType } = message;
+    const reservedSpot = this.getReservedSpot();
+    reservedSpot.reserved = creepName;
+    this.fork(creepName, HARVESTER_PROCESS, { creepName, spot: reservedSpot, harvesting: true } as HarvesterContext);
+    const creep = _.find(this.context.creeps!, c => c.creepName === creepName)!;
+    creep.spawning = undefined;
+  }
+
+  private getReservedSpot(): SourceSpotContext {
+    return _.find(this.context.spots!, spot => spot.reserved === true)!;
+  }
+
+  private getFreeSpot(): SourceSpotContext {
+    return _.find(this.context.spots!, spot => spot.reserved === false)!;
+  }
+
+  private areThereFreeSpots(): boolean {
+    return _.any(this.context.spots!, spot => spot.reserved === false);
+  }
+
+  log(message: () => string) {
+    super.log(message, this.context.roomName);
+  }
+
+  print(obj: any) {
     return JSON.stringify(obj, null, 2);
   }
 }
 
-declare global {
-  type EnergyContext = BlankContext & {
-    roomName: string;
-    sources: SourceStatusContext[];
-    controller: string;
-    haulers: Array<{
-      creep: string;
-      from: string;
-      to: string;
-    }>;
-    remote?: string;
-  };
+interface SourcePosition {
+  id: string;
+  pos: RoomPosition;
+}
 
+interface SourceNearbyPosition {
+  id: string;
+  pos: RoomPosition;
+}
+
+interface SourceNearbyPositions {
+  id: string;
+  positions: RoomPosition[];
+}
+
+declare global {
+  type SourceSpotContext = BlankContext & {
+    sourceId: string;
+    pos: RoomPosition,
+    reserved?: boolean | string
+  };
+  type EnergyCreepContext = {
+    creepName: string;
+    creepType: string;
+    spawning?: boolean;
+  };
+  type EnergyContext = RoomContext & {
+    spots?: SourceSpotContext[];
+    creeps?: EnergyCreepContext[];
+  };
   const FILL_CONTAINER = 'fill_container';
   type FILL_CONTAINER = 'fill_container';
   type FillContainerMessage = EmptyMessage & {
