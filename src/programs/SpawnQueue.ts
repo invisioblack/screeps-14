@@ -25,7 +25,7 @@ export class SpawnQueue extends Process {
         return;
       }
       const spawns = Game.rooms[creep.roomName].find(FIND_MY_SPAWNS) as StructureSpawn[];
-      this.log(() => `Spawns: ${JSON.stringify(spawns, null, 2)}`);
+      // this.log(() => `Spawns: ${JSON.stringify(spawns, null, 2)}`);
       const spawn = spawns[0];
       const miners = _.filter(Game.creeps, c => c.name.indexOf('miner') > -1);
       const structures = spawn.room.find(FIND_STRUCTURES, {
@@ -34,8 +34,9 @@ export class SpawnQueue extends Process {
       }) as Array<(StructureSpawn | StructureExtension)>;
 
       this.log(() => `Total energy: ${_.sum(structures, x => x.energy)}`);
-      const maxEnergyAvailable = _.sum(structures, structure => structure.energyCapacity);
-      const bodyParts = CreepBuilder.build(creep.creepType, maxEnergyAvailable);
+      // const maxEnergyAvailable = _.sum(structures, structure => structure.energyCapacity);
+      const currentEnergyAvailable = _.sum(structures, x => x.energy);
+      const bodyParts = miners.length == 0 ? [WORK, CARRY, MOVE] : CreepBuilder.build(creep.creepType, currentEnergyAvailable);
       const result = spawn.spawnCreep(bodyParts, creep.name, { memory: { owner: creep.owner }, energyStructures: structures});
       if (result == ERR_NAME_EXISTS) return;
       this.log(() => `Result: ${result}}`);

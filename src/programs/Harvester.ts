@@ -64,7 +64,7 @@ export class Harvester extends Process {
         const msg = this.creep.transfer(targets[0], RESOURCE_ENERGY);
         this.log(() => `Code: ${msg}`);
         if (msg == ERR_NOT_IN_RANGE) {
-          this.creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' } });
+          this.creep.moveTo(targets[0], { ignoreCreeps: true, visualizePathStyle: { stroke: '#ffffff' } });
         }
       }
     }

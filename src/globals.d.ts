@@ -25,6 +25,8 @@ BUILDER_PROCESS
 | HAULER_PROCESS
 | HARVESTER_PROCESS
 | NOOP_PROCESS
+| MINER_PROCESS
+| REMOTE_MINER_PROCESS
 | REPAIRER_PROCESS
 | ROOM_PROCESS
 | SOURCE_PROCESS
@@ -74,6 +76,7 @@ type Context = {
   init: InitContext
   miner: MinerContext
   repairer: RepairerContext
+  remote_miner: RemoteMinerContext
   room: RoomContext
   source: SourceContext
   spawn_queue: SpawnQueueContext

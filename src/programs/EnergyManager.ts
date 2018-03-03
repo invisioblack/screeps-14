@@ -122,6 +122,7 @@ declare global {
       from: string;
       to: string;
     }>;
+    remote?: string;
   };
 
   const FILL_CONTAINER = 'fill_container';

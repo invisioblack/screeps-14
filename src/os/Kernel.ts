@@ -7,7 +7,7 @@ import { ControllerManager } from 'programs/ControllerManager';
 import { EnergyManager } from 'programs/EnergyManager';
 import { Harvester } from 'programs/Harvester';
 import { Hauler } from 'programs/Hauler';
-import { MinerProcess } from 'programs/Miner';
+import { MinerProcess, RemoteMiner } from 'programs/Miner';
 import { Repairer } from 'programs/Repairer';
 import { RoomManager } from 'programs/RoomManager';
 import { SourceManager } from 'programs/SourceManager';
@@ -28,6 +28,7 @@ export const images: {[type: string]: any} = {
   harvester: Harvester,
   init: InitProcess,
   miner: MinerProcess,
+  remote_miner: RemoteMiner,
   repairer: Repairer,
   room: RoomManager,
   source: SourceManager,
