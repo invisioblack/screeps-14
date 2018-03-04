@@ -1,48 +1,31 @@
 import {Process} from '../os/Process';
+import { MessageUtil } from 'lib/MessageUtil';
+import { PositionUtil } from '../utils/PositionUtil';
 
 export class Builder extends Process {
   image: ImageType = BUILDER_PROCESS;
   context!: Context[BUILDER_PROCESS];
+  creep!: Creep;
+  room!: Room;
+  sites!: ConstructionSite[];
+  pos!: RoomPosition;
 
   run() {
 
-    const creep = Game.creeps[this.context.creep];
-    if (!creep) {
+    this.log(() => `Running`);
+    this.creep = Game.creeps[this.context.creepName];
+
+    if (!this.creep) {
       this.completed = true;
       return;
     }
 
-    const room = Game.rooms[this.context.roomName];
-    if (!room) {
-      this.completed = true;
-      return;
-    }
+    this.room = Game.rooms[this.context.roomName];
+    this.pos = PositionUtil.createRoomPosition(this.context.spot.pos);
 
-    this.log(() => 'Running');
-
-    let sites: ConstructionSite[] = [];
-    if (!this.context.manual && this.context.sites.length == 0) {
-      sites = _.map(this.context.sites, site => Game.getObjectById(site) as ConstructionSite);
-      this.log(() => `From context`);
-    } else {
-      this.log(() => `From room`);
-      sites = room.find(FIND_MY_CONSTRUCTION_SITES);
-      // tslint:disable-next-line:max-line-length
-      if (sites.length == 0) {
-        sites = room.find(FIND_CONSTRUCTION_SITES);
-      }
-      this.context.sites = _.map(sites, site => site.id);
-    }
-    this.log(() => `Sites: ${JSON.stringify(sites, null, 2)}`);
-
-    if (sites.length == 0) {
-      this.completed = true;
-      return;
-    }
-
-    const target = sites[0];
+    const target = this.sites[0];
     if (!target) {
-      sites.shift();
+      this.sites.shift();
       this.context.sites.shift();
       this.log(() => 'Removing');
       return;
@@ -50,42 +33,41 @@ export class Builder extends Process {
     // tslint:disable-next-line:max-line-length
     this.log(() => `Target: ${target.structureType}, ${target.progress} / ${target.progressTotal} = ${Math.floor(target.progress * 100 / target.progressTotal)}%`);
 
-    if (this.context.building && creep.carry.energy === 0) {
+    if (this.context.building && this.creep.carry.energy === 0) {
       this.context.building = false;
-      creep.say('🔄 harvest');
     }
 
-    if (!this.context.building && creep.carry.energy == creep.carryCapacity) {
-      creep.say('⚒️ build');
+    if (!this.context.building && this.creep.carry.energy ===  this.creep.carryCapacity) {
       this.context.building = true;
     }
 
     if (this.context.building) {
-      if (creep.build(target) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(target, { visualizePathStyle: { stroke: 'orange' } });
+      if (this.creep.build(target) == ERR_NOT_IN_RANGE) {
+        this.creep.moveTo(target, { visualizePathStyle: { stroke: 'orange' } });
       }
     } else {
-      const targets = room.find(FIND_STRUCTURES, {
+      const targets = this.room.find(FIND_STRUCTURES, {
         filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store.energy > 0
       });
       if (targets.length > 0) {
-        if (creep.withdraw(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(targets[0], { visualizePathStyle: { stroke: 'red' } });
+        if (this.creep.withdraw(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+          this.creep.moveTo(targets[0], { visualizePathStyle: { stroke: 'red' } });
         }
       } else {
-        const source = creep.pos.findClosestByRange(FIND_SOURCES, {
-          filter: structure => structure.energy > 0
-        });
-
-        if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(source, { visualizePathStyle: { stroke: 'red' } });
+        this.log(() => `Trying to harvest`);
+        if (this.creep.pos.isEqualTo(this.pos)) {
+          const result = this.creep.harvest(Game.getObjectById(this.context.spot.sourceId) as Source);
+          this.log(() => `Harvesting: ${MessageUtil.getMessage(result)}`);
+        } else {
+          const result = this.creep.moveTo(this.pos, { maxRooms: 1 });
+          this.log(() => `Moving: ${MessageUtil.getMessage(result)}`);
         }
       }
     }
   }
 
   log(message: () => string) {
-    super.log(message, this.context.creep);
+    super.log(message, this.context.creepName);
   }
 }
 
@@ -94,10 +76,11 @@ declare global {
   const BUILDER_PROCESS = 'builder';
   type BUILDER_PROCESS = 'builder';
 
-  type BuilderContext = CreepContext & {
-    sites: string[];
-    manual: boolean;
-    building: boolean;
+  type BuilderContext = {
+    creepName: string;
     roomName: string;
+    spot: SourceSpotContext;
+    sites: string[];
+    building: boolean;
   };
 }

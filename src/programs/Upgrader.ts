@@ -1,87 +1,67 @@
+import { MessageUtil } from 'lib/MessageUtil';
 import { Process } from 'os/Process';
-import {Logger} from '../utils/Logger';
+import { PositionUtil } from 'utils/PositionUtil';
+import { Logger } from '../utils/Logger';
 
 export class Upgrader extends Process {
   image: ImageType = UPGRADER_PROCESS;
   context!: Context[UPGRADER_PROCESS];
+  creep!: Creep;
+  room!: Room;
+  controller!: StructureController;
+  pos!: RoomPosition;
 
   run() {
 
-    console.log('what');
-    // Logger.debug(`UPGRADER[${this.context.creep}] Running.`);
-    const creep = Game.creeps[this.context.creep];
+    this.log(() => `Running`);
+    this.creep = Game.creeps[this.context.creepName];
 
-    if (!creep) {
+    if (!this.creep) {
       this.completed = true;
       return;
     }
 
-    if (this.context.upgrading && creep.carry.energy === 0) {
+    this.room = Game.rooms[this.context.roomName];
+    this.controller = this.room.controller!;
+    this.pos = PositionUtil.createRoomPosition(this.context.spot.pos);
+
+    if (this.context.upgrading && this.creep.carry.energy === 0) {
       this.context.upgrading = false;
-      creep.say('🔄 harvest');
-    }
-
-    this.log(() => `Count capacity: ${creep.getActiveBodyparts(CARRY) * CARRY_CAPACITY}`);
-    this.log(() => `Capacity ${creep.carryCapacity}`)
-
-    if (!this.context.upgrading && creep.carry.energy == creep.carryCapacity) {
-      creep.say('⚡ upgrade');
+    } else if (!this.context.upgrading && this.creep.carry.energy === this.creep.carryCapacity) {
       this.context.upgrading = true;
     }
 
     if (this.context.upgrading) {
       this.log(() => `Trying to upgrade`);
-      const controller = Game.getObjectById(this.context.controller) as StructureController;
-      const upgradeResult = creep.upgradeController(controller);
-      this.log(() => `Upgraded: ${upgradeResult}`);
-      if (upgradeResult == ERR_NOT_IN_RANGE) {
-        // tslint:disable-next-line:max-line-length
-        this.log(() => `Moving to move to upgrade, current x:${creep.pos.x},y:${creep.pos.y}, want to x:${controller.pos.x},y:${controller.pos.y}`);
-        creep.moveTo(controller, { visualizePathStyle: { stroke: '#ffffff' }});
+      if (this.creep.pos.isNearTo(this.controller.pos)) {
+        const result = this.creep.upgradeController(this.controller);
+        this.log(() => `Upgrading: ${MessageUtil.getMessage(result)}`);
+      } else {
+        const result = this.creep.moveTo(this.controller.pos, { maxRooms: 1 });
+        this.log(() => `Moving: ${MessageUtil.getMessage(result)}`);
       }
     } else {
-      const source = creep.room.find(FIND_SOURCES)[0] as Source;
-      // const targets = creep.room.find(FIND_STRUCTURES, {
-      //   filter: structure => structure.structureType == STRUCTURE_CONTAINER
-      //   && structure.store.energy > 0
-      // });
-      let target: StructureContainer | undefined;
-      if (this.context.container) {
-        this.log(() => `Found container on context`);
-        target = Game.getObjectById(this.context.container) as StructureContainer;
-      }
-      if (!target || (target && target.store.energy == 0)) {
-        this.log(() => `Getting new container target`);
-        target = creep.room.controller!.pos.findClosestByRange(FIND_STRUCTURES, {
-          filter: structure => structure.structureType == STRUCTURE_CONTAINER
-          && structure.store.energy > 0
-        }) as StructureContainer;
-        this.log(() => `Found container? ${!!target}`);
-        this.context.container = (target) ? target.id : undefined;
-      }
-
-      if (target) {
-        this.log(() => `Trying to withdraw`);
-        if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          // tslint:disable-next-line:max-line-length
-          this.log(() => `Moving to move to withdraw, current x:${creep.pos.x},y:${creep.pos.y}, want to x:${target!.pos.x},y:${target!.pos.y}`);
-          creep.moveTo(target, { visualizePathStyle: { stroke: 'red' } });
-        }
-      } else if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-        this.log(() => `Trying to move to harvest`);
-        creep.moveTo(source, { visualizePathStyle: { stroke: 'red' } });
+      this.log(() => `Trying to harvest`);
+      if (this.creep.pos.isEqualTo(this.pos)) {
+        const result = this.creep.harvest(Game.getObjectById(this.context.spot.sourceId) as Source);
+        this.log(() => `Harvesting: ${MessageUtil.getMessage(result)}`);
+      } else {
+        const result = this.creep.moveTo(this.pos, { maxRooms: 1 });
+        this.log(() => `Moving: ${MessageUtil.getMessage(result)}`);
       }
     }
   }
 
   log(message: () => string) {
-    super.log(message, this.context.creep);
+    super.log(message, this.context.creepName);
   }
 }
 
 declare global {
-  type UpgraderContext = CreepContext & {
-    controller: string;
+  type UpgraderContext = {
+    creepName: string;
+    roomName: string;
+    spot: SourceSpotContext;
     upgrading: boolean;
     container?: string;
   };

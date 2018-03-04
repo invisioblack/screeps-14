@@ -19,26 +19,6 @@ export class RoomManager extends Process {
       roomName: this.context.roomName
     } as EnergyContext);
 
-    // const sources = _
-    //   .map(Game.rooms[this.context.roomName]
-    //     .find(FIND_SOURCES_ACTIVE), x => {
-    //       return { id: x.id, enabled: false } as SourceStatusContext;
-    //     });
-
-    // const controller = Game.rooms[this.context.roomName].controller as StructureController;
-
-    // this.fork(`energy-manager_${this.context.roomName}`, ENERGY_PROCESS, {
-    //   roomName: this.context.roomName,
-    //   sources,
-    //   controller: controller.id,
-    //   haulers: []
-    // } as EnergyContext);
-
-    // this.fork(`construction-manager_${this.context.roomName}`, CONSTRUCTION_PROCESS, {
-    //   room: this.context.roomName,
-    //   creeps: []
-    // });
-
     // this.fork(`tower-defense_${this.context.roomName}`, TOWER_PROCESS, {
     //   roomName: this.context.roomName
     // });

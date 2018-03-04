@@ -3,14 +3,12 @@ import { Process } from 'os/Process';
 import { Scheduler } from 'os/Scheduler';
 import { Builder } from 'programs/Builder';
 import { ConstructionManager } from 'programs/ConstructionManager';
-import { ControllerManager } from 'programs/ControllerManager';
 import { EnergyManager } from 'programs/EnergyManager';
 import { Harvester } from 'programs/Harvester';
 import { Hauler } from 'programs/Hauler';
 import { MinerProcess, RemoteMiner } from 'programs/Miner';
 import { Repairer } from 'programs/Repairer';
 import { RoomManager } from 'programs/RoomManager';
-import { SourceManager } from 'programs/SourceManager';
 import { SpawnNotifier } from 'programs/SpawnNotifier';
 import { SpawnQueue } from 'programs/SpawnQueue';
 import { TowerDefense } from 'programs/TowerDefense';
@@ -22,7 +20,6 @@ import { Logger } from 'utils/Logger';
 export const images: {[type: string]: any} = {
   builder: Builder,
   construction: ConstructionManager,
-  controller: ControllerManager,
   energy: EnergyManager,
   hauler: Hauler,
   harvester: Harvester,
@@ -31,7 +28,6 @@ export const images: {[type: string]: any} = {
   remote_miner: RemoteMiner,
   repairer: Repairer,
   room: RoomManager,
-  source: SourceManager,
   spawn_notifier: SpawnNotifier,
   spawn_queue: SpawnQueue,
   tower: TowerDefense,
