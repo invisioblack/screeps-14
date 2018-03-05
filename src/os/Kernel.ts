@@ -16,13 +16,14 @@ import { TowerRepairer } from 'programs/TowerRepairer';
 import { Upgrader } from 'programs/Upgrader';
 import { InitProcess } from 'system/Init';
 import { Logger } from 'utils/Logger';
+import { HarvesterProcess } from '../main';
 
 export const images: {[type: string]: any} = {
   builder: Builder,
   construction: ConstructionManager,
   energy: EnergyManager,
   hauler: Hauler,
-  harvester: Harvester,
+  harvester: HarvesterProcess,
   init: InitProcess,
   miner: MinerProcess,
   remote_miner: RemoteMiner,
@@ -48,7 +49,7 @@ export class Kernel {
     this.loadProcessTable();
     this.loadProcessQueue();
     this.bus.init();
-    this.launchProcess(INIT_PROCESS, INIT_PROCESS, { created_at: Game.time });
+    //this.launchProcess(INIT_PROCESS, INIT_PROCESS, { created_at: Game.time });
   }
 
   shutdown() {

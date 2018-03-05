@@ -6,14 +6,16 @@ export class InitProcess extends Process {
   context!: Context[INIT_PROCESS];
 
   run() {
-    this.fork(`spawn-queue`, SPAWN_QUEUE_PROCESS, { queue: [] } as SpawnQueueContext);
+    // this.fork(`spawn-queue`, SPAWN_QUEUE_PROCESS, { queue: [] } as SpawnQueueContext);
 
-    for (const room of _.filter(Game.rooms, r => r.controller && r.controller.my)) {
-      this.log(() => `Forking room`, room.name);
-      this.fork(`room_${room.name}`, ROOM_PROCESS, { roomName: room.name } as RoomContext);
-    }
+    // for (const room of _.filter(Game.rooms, r => r.controller && r.controller.my)) {
+    //   this.log(() => `Forking room`, room.name);
+    //   this.fork(`room_${room.name}`, ROOM_PROCESS, { roomName: room.name } as RoomContext);
+    // }
 
-    this.suspend = 10;
+    // this.suspend = 10;
+
+    // this.fork(`harvester`, HARVESTER_PROCESS, { queue: [] } as HarvesterC);
   }
 }
 
