@@ -1,5 +1,4 @@
 import { Process } from 'os/Process';
-import { Logger } from 'utils/Logger';
 
 export class Scheduler {
   processQueue: Process[] = [];

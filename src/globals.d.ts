@@ -1,114 +1,35 @@
-declare const CONTROLLER_PROCESS = 'controller';
-declare const ENERGY_PROCESS = 'energy';
+// Processes
 declare const HARVESTER_PROCESS = 'harvester';
-declare const NOOP_PROCESS = 'noop';
-declare const ROOM_PROCESS = 'room';
-declare const SOURCE_PROCESS = 'source';
-declare const SPAWN_QUEUE_PROCESS = 'spawn_queue';
-declare const UPGRADER_PROCESS = 'upgrader';
-type CONTROLLER_PROCESS = 'controller';
-type ENERGY_PROCESS = 'energy';
-type HARVESTER_PROCESS = 'harvester';
-type NOOP_PROCESS = 'noop';
-type ROOM_PROCESS = 'room';
-type SOURCE_PROCESS = 'source';
-type SPAWN_QUEUE_PROCESS = 'spawn_queue';
-type UPGRADER_PROCESS = 'upgrader';
-type ImageType =
-BUILDER_PROCESS
-| CONTROLLER_PROCESS
-| CONSTRUCTION_PROCESS
-| ENERGY_PROCESS
-| INIT_PROCESS
-| HAULER_PROCESS
-| HARVESTER_PROCESS
-| NOOP_PROCESS
-| MINER_PROCESS
-| REMOTE_MINER_PROCESS
-| REPAIRER_PROCESS
-| ROOM_PROCESS
-| SOURCE_PROCESS
-| SPAWN_QUEUE_PROCESS
-| SPAWN_NOTIFIER_PROCESS
-| TOWER_PROCESS
-| TOWER_REPAIRER_PROCESS
-| UPGRADER_PROCESS;
-type BlankContext = {};
-type SourceStatusContext = {
-  id: string,
-  enabled: boolean
-}
-type ControllerContext = BlankContext & {
-  id: string;
-  creeps: string[];
-  hauler?: boolean;
-}
-type CreepContext = BlankContext & {
-  creep: string;
-}
 
-type RoomContext = BlankContext & {
-  roomName: string;
+// Daemons
+declare const INIT_PROCESS = 'init';
+
+//Threads
+declare const BOOTSTRAPING_HARVEST = 'bootstraping_harvest';
+declare const HARVESTING = 'harvesting';
+declare const LOOKING_FOR_JOBS = 'looking_for_jobs';
+declare const MOVING_TO_TRANSFER = 'moving';
+declare const MOVING_TO_HARVEST = 'moving';
+declare const MOVING_TO_UPGRADE = 'moving';
+declare const SPAWNING = 'spawning';
+declare const TRANSFERING = 'transfering';
+declare const UPGRADING = 'upgrading';
+
+type ProcessType =
+INIT_PROCESS |
+HARVESTER_PROCESS;
+
+type Contexts = {
+  [type: string]: {}
+  harvester: HarvesterCtx
 };
 
-type SpawnQueueContext = BlankContext & {
-  queue: {
-    creepType: string;
-    roomName: string;
-    priority: number
-  }[]
-}
+type Harvesting = 'harvesting';
+type MovingToHarvest = 'moving';
+type Transfering = 'transfering';
+type MovingToTransfer = 'moving';
+type Upgrading = 'upgrading';
+type MovingToUpgrade = 'moving';
+type BootstrapingHarvest = 'bootstraping_harvest';
+type Spawning = 'spawning'
 
-type Context = {
-  [image: string]: {}
-  builder: BuilderContext
-  controller: ControllerContext
-  construction: ConstructionContext
-  energy: EnergyContext
-  hauler: HaulerContext
-  harvester: HarvesterContext
-  init: InitContext
-  miner: MinerContext
-  repairer: RepairerContext
-  remote_miner: RemoteMinerContext
-  room: RoomContext
-  source: SourceContext
-  spawn_queue: SpawnQueueContext
-  spawn_notifier: SpawnNotifierContext
-  tower: TowerDefenseContext
-  tower_repairer: TowerRepairerContext
-  upgrader: UpgraderContext
-};
-
-type EmptyMessage = {};
-type CreepMessage = {
-  creepName: string;
-};
-
-declare const CREEP_SPAWNED = 'creep_spawned';
-type CREEP_SPAWNED = 'creep_spawned';
-type CreepSpawnedMessage = CreepMessage & {
-  creepType: string;
-};
-
-declare const QUEUE_CREEP = 'queue_creep';
-type QUEUE_CREEP = 'queue_creep';
-type QueueCreepMessage = EmptyMessage & {
-  owner: string;
-  creepName: string;
-  creepType: string;
-  roomName: string;
-  priority: number;
-};
-
-type MessageType =
-FILL_CONTAINER
-| CREEP_SPAWNED
-| QUEUE_CREEP;
-
-type Message = {
-  [message: string]: {}
-  'fill_container': FillContainerMessage
-  'queue_creep': QueueCreepMessage
-  'creep_spawned': CreepSpawnedMessage
-};

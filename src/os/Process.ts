@@ -1,64 +1,129 @@
 import { Kernel } from 'os/Kernel';
+import { HarvestBootstrapThread } from 'threads/HarvestingBootstrapThread';
+import { HarvestThread } from 'threads/HarvestingThread';
+import { LoggingThread } from 'threads/LoggingThread';
+import { LookingForJobsThread } from 'threads/LookingForJobsThread';
+import { MovingThread } from 'threads/MovingThread';
+import { SpawningThread } from 'threads/SpawningThread';
+import { TransferingThread } from 'threads/TransferingThread';
+import { UpgradingThread } from 'threads/UpgradingThread';
 
-export class Process {
-  completed = false;
-  context: any;
-  name: string;
-  image: ImageType = NOOP_PROCESS;
-  parent: string;
-  suspend: number | boolean = false;
+const ThreadType: {[type: string]: any} = {
+  bootstraping_harvest: HarvestBootstrapThread,
+  harvesting: HarvestThread,
+  looking_for_jobs: LookingForJobsThread,
+  logging: LoggingThread,
+  moving: MovingThread,
+  spawning: SpawningThread,
+  transfering: TransferingThread,
+  upgrading: UpgradingThread
+};
 
-  constructor(private kernel: Kernel, entry: SerializedProcess) {
-    this.name = entry.name;
-    this.context = entry.context || {};
-    this.parent = entry.parent;
-    this.suspend = entry.suspend || false;
+export abstract class Process implements IProcess {
+  completed?: boolean;
+  abstract class: string;
+  abstract initialState: string;
+
+  constructor(private kernel: Kernel,
+              public name: string,
+              public ctx: any,
+              public parent?: string,
+              public sleep?: number) {}
+
+  fork<T extends ProcessType>(process: T, name: string, ctx: Contexts[T]): void {
+    this.kernel.addProcess(process, name, ctx, this.name);
   }
 
-  run() {
-    console.log(`Run method not implemented for process [${this.name}]`);
+  runState(): ThreadResult {
+    const [ state, ctx ] = this.ctx.stack[this.ctx.stack!.length - 1];
+    const thread = new ThreadType[state](this, ctx);
+    return thread.run();
   }
 
-  fork<T extends ImageType>(name: string, image: T, context: Context[T], delay?: number) {
-    this.kernel.launchProcess(name, image, context, this.name, delay);
+  pushState(state: string, ctx?: any): void {
+    if (!this.ctx.stack) this.ctx.stack = [];
+    this.ctx.stack.push([state, ctx]);
   }
 
-  killChildren(): void {
-    for (const child of this.kernel.getChildren(this.name)) {
-      child.completed = true;
-      child.killChildren();
-    }
+  pushStateAndRun(state: string, ctx?: any): ThreadResult {
+    this.pushState(state, ctx);
+    return this.runState();
   }
 
-  sendMessage<T extends MessageType>(process: string, type: T, message: Message[T], interrupt: boolean = false) {
-    this.kernel.bus.sendMessage(process, type, message, interrupt);
+  setStateAndRun(state: string, ctx?: any): ThreadResult {
+    this.pushState(state, ctx);
+    return this.runState();
   }
 
-  sendMessageToParent<T extends MessageType>(type: T, message: Message[T]) {
-    this.kernel.bus.sendMessage(this.parent!, type, message);
+  popState(): void {
+    this.ctx.stack!.pop();
   }
 
-  sendMessageToChildren<T extends MessageType>(type: T, message: Message[T]) {
-    for (const child of this.kernel.getChildren(this.name)) {
-      this.kernel.bus.sendMessage(child.name, type, message);
-    }
+  popStateAndRun(): ThreadResult {
+    this.popState();
+    return this.runState();
   }
 
-  receiveMessages() {
-    return this.kernel.bus.receiveMessages(this.name);
+  run(): ThreadResult {
+    if (!this.ctx.stack) this.pushState(this.initialState, this.ctx);
+    const Before = Game.cpu.getUsed();
+    const result = this.runState();
+    const cpuAfter = Game.cpu.getUsed();
+    // console.log(`CPU spent: ${cpuAfter - cpuBefore}`);
+    return result;
   }
 
-  log(message: () => string, context?: string | string[], messageColor?: string) {
-    this.kernel.log(message, this.image, context, messageColor);
-  }
+  serialize = (): SerializedProcess => ({
+    name: this.name,
+    class: this.class,
+    parent: this.parent,
+    ctx: this.ctx,
+    sleep: this.sleep
+  })
 }
 
 declare global {
-  interface SerializedProcess {
+  interface IProcess {
+    completed?: boolean;
     name: string;
-    image: string;
-    context: any;
-    parent: string;
-    suspend: number | boolean;
+    parent?: string;
+    sleep?: number;
+    class: string;
+    initialState: string;
+    run(): ThreadResult;
+    runState(): ThreadResult;
+    setStateAndRun(state: string, ctx?: any): ThreadResult;
+    pushState(state: string, ctx?: any): void;
+    pushStateAndRun(state: string, ctx?: any): ThreadResult;
+    popState(): void;
+    popStateAndRun(): ThreadResult;
+  }
+
+  type Done = boolean | void;
+  type Sleep = number;
+  type ThreadResult = Done | Sleep;
+
+  type SerializedProcess = {
+    name: string;
+    class: string;
+    parent?: string;
+    ctx: any;
+    sleep?: number;
+  };
+}
+
+export abstract class Thread {
+  abstract state: string;
+  constructor(protected process: IProcess, protected ctx: any) {}
+
+  abstract run(): ThreadResult;
+
+  sleep(ticks: number): Sleep {
+    console.log(`Sleeping for: ${ticks} ticks`);
+    return ticks;
+  }
+
+  done(): Done {
+    return true;
   }
 }
